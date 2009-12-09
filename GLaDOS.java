@@ -51,6 +51,12 @@ public class GLaDOS extends AdvancedRobot {
 		while (true) {
 			// Replace the next 4 lines with any behavior you would like
 
+			setTurnLeftRadians(0.0);
+			setAhead(0.0);
+			setFire(0.0);
+			setTurnRadarRightRadians(0.0);
+			setTurnGunRightRadians(0.0);
+
 			radar.update();
 			movement.update();
 			gun.update();
