@@ -10,7 +10,7 @@ import java.awt.Color;
  * @author Alistair Lynn <alistair@hovercatsw.com>
  * @author Daniel May <dm16g09@ecs.soton.ac.uk>
  */
-public class GLaDOS extends Robot {
+public class GLaDOS extends AdvancedRobot {
 
 	private Radar radar = new Radar(this);
 	private Gun gun = new Gun(this);
