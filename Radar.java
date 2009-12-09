@@ -7,6 +7,7 @@ public class Radar {
 	
 	private GLaDOS owner;
 	private boolean sawRobot = false;
+	private double dRadarHeading = Math.PI / 10;
 	
 	public Radar(GLaDOS g){
 		owner = g;
@@ -14,8 +15,11 @@ public class Radar {
 	}///cons
 	
 	public void onScannedRobot(ScannedRobotEvent e){
-		owner.fire(1);
-		sawRobot = true;
+		//owner.fire(1);
+		//sawRobot = true;
+		dRadarHeading = -1 * dRadarHeading;
+		
+		
 	}//onscannedrobot
 	
 	public void onHitByBullet(HitByBulletEvent e) {
@@ -28,7 +32,7 @@ public class Radar {
 	
 	public void update(){
 		sawRobot = false;
-		owner.turnRadarRight(20);
+		owner.turnRadarRightRadians(dRadarHeading);
 		owner.scan();
 	}//update
 
