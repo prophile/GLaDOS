@@ -13,4 +13,6 @@ public class Gun {
 			owner.fire(1);
 	}
 	
+	public void init(){}
+	
 }

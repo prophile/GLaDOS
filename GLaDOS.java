@@ -44,7 +44,9 @@ public class GLaDOS extends AdvancedRobot {
 		// After trying out your robot, try uncommenting the import at the top,
 		// and the next line:
 		setColors(Color.black, Color.yellow, Color.black);
-		ahead(1);
+		radar.init();
+		gun.init();
+		movement.init();
 
 		while (true) {
 			// Replace the next 4 lines with any behavior you would like

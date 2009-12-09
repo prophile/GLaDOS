@@ -11,4 +11,6 @@ public class Movement {
 		owner.ahead(1);
 	}
 	
+	public void init(){}
+	
 }

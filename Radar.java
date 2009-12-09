@@ -14,11 +14,17 @@ public class Radar {
 		
 	}///cons
 	
+	public void init(){
+		//owner.setAdjustGunForRobotTurn(false);
+		
+	}
+	
 	public void onScannedRobot(ScannedRobotEvent e){
 
 		//owner.setFire(1);
 		//sawRobot = true;
 		dRadarHeading = -1 * dRadarHeading;
+		owner.fire(1);
 	
 	}//onscannedrobot
 	
