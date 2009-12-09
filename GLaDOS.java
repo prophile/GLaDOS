@@ -5,7 +5,7 @@ import java.awt.Color;
 
 /**
  * GLaDOS - a robot by (Chris, Dan, Alistair)
- * 
+ *
  * @author Chris Kirkham <ck5g09@ecs.soton.ac.uk>
  * @author Alistair Lynn <alistair@hovercatsw.com>
  * @author Daniel May <dm16g09@ecs.soton.ac.uk>
