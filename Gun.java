@@ -10,7 +10,7 @@ public class Gun {
 
 	public void update() {
 		if (owner.getRadar().didSeeRobot())
-			owner.fire(1);
+			owner.setFire(1);
 	}
 
 	public void init(){}
