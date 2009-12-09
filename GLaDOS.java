@@ -16,14 +16,23 @@ public class GLaDOS extends Robot {
 	private Gun gun = new Gun(this);
 	private Movement movement = new Movement(this);
 
+	/**
+	 * Fetch the associated radar.
+	 */
 	public Radar getRadar() {
 		return radar;
 	}
 
+	/**
+	 * Fetch the associated gun turret.
+	 */
 	public Gun getGun() {
 		return gun;
 	}
 
+	/**
+	 * Fetch the associated movement manager.
+	 */
 	public Movement getMovement() {
 		return movement;
 	}
