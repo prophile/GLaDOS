@@ -16,7 +16,6 @@ public class Radar {
 
 	public void init(){
 		//owner.setAdjustGunForRobotTurn(false);
-		
 	}
 
 	public void onScannedRobot(ScannedRobotEvent e){
@@ -25,7 +24,7 @@ public class Radar {
 		//sawRobot = true;
 		dRadarHeading = -1 * dRadarHeading;
 
-		owner.fire(1);
+		owner.setFire(1);
 
 	}//onscannedrobot
 
