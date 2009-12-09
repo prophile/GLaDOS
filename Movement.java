@@ -8,7 +8,7 @@ public class Movement {
 	}
 
 	public void update () {
-		owner.setAhead(1);
+		owner.setAhead(50);
 	}
 
 	public void init(){}
