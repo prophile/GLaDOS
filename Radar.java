@@ -14,12 +14,12 @@ public class Radar {
 	}///cons
 	
 	public void onScannedRobot(ScannedRobotEvent e){
-		owner.fire(1);
+		owner.setFire(1);
 		sawRobot = true;
 	}//onscannedrobot
 	
 	public void onHitByBullet(HitByBulletEvent e) {
-		owner.turnLeft(90 - e.getBearing());
+		owner.setTurnLeftRadians(Math.PI - e.getBearing());
 	}
 	
 	public boolean didSeeRobot () {
@@ -28,7 +28,7 @@ public class Radar {
 	
 	public void update(){
 		sawRobot = false;
-		owner.turnRadarRight(20);
+		owner.setTurnRadarRightRadians(Math.PI / 10);
 		owner.scan();
 	}//update
 
