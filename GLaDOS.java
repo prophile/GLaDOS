@@ -55,7 +55,7 @@ public class GLaDOS extends AdvancedRobot {
 
 			// ahead(100);
 			// turnGunRight(360);
-
+			execute();
 		}
 	}
 
