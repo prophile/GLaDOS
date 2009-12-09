@@ -7,7 +7,7 @@ public class Radar {
 
 	private GLaDOS owner;
 	private boolean sawRobot = false;
-	private double dRadarHeading = Math.PI / 10;
+	private double dRadarHeading = Math.PI / 4;
 
 	public Radar(GLaDOS g){
 		owner = g;
