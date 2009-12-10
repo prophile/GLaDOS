@@ -26,7 +26,7 @@ public class WallE extends AdvancedRobot {
 	double moveAmount; // How much to move
 	double oldEnemyHeading = 0.0;
 	
-	double expectedEnemyEnergy;
+	double expectedEnemyEnergy = 100.0;
 	
 	int count = 0; // Keeps track of how long we've
 	// been searching for our target
@@ -81,6 +81,13 @@ public class WallE extends AdvancedRobot {
 				trackName = null;
 			}
 			execute();
+			int currentEnergy = (int)getEnergy();
+			if (currentEnergy < 30)
+				setGunColor(Color.red);
+			else if (expectedEnemyEnergy < 30.0)
+				setGunColor(Color.green);
+			else
+				setGunColor(Color.yellow);
 		}
 	}
 	
