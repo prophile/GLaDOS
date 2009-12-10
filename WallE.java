@@ -203,8 +203,13 @@ public class WallE extends AdvancedRobot
 			return; // this prevents us wasting energy on shots when we're far away
 		
 		// circular tracking: an algorithm from The Wiki™
-		// calculate the bullet power as min(2, our energy)
-		double bulletPower = Math.min(getEnergy(), 2.0);
+		// calculate the bullet power as min(rBP, our energy)
+		double requestedBulletPower;
+		if (e.getDistance() < 400.0)
+			requestedBulletPower = 3.0;
+		else
+			requestedBulletPower = 2.0;
+		double bulletPower = Math.min(getEnergy(), requestedBulletPower);
 		// get their distance
 		double distance = e.getDistance();
 		// get our position
