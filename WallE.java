@@ -143,7 +143,7 @@ public class WallE extends AdvancedRobot {
 		// If we don't have a target, well, now we do!
 		if (trackName == null) {
 			trackName = e.getName();
-			log.println("Tracking " + trackName);
+			// log.println("Tracking " + trackName);
 			expectedEnemyEnergy = e.getEnergy();
 		} else {
 			if (e.getEnergy() < expectedEnemyEnergy) {
@@ -159,7 +159,7 @@ public class WallE extends AdvancedRobot {
 					stop();
 				else if (changed)
 					resume();
-				log.println("Detected fire");
+				// log.println("Detected fire");
 				expectedEnemyEnergy = e.getEnergy();
 			}
 		}
