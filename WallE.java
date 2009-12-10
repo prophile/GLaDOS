@@ -79,6 +79,9 @@ public class WallE extends AdvancedRobot
 				trackingCount++;
 				switch (trackingCount)
 				{
+					case 0:
+					case 1:
+						gunRotation = defaultGunRotationSpeed;
 					case 3:
 						gunRotation = -defaultGunRotationSpeed;
 					case 6:
@@ -88,6 +91,10 @@ public class WallE extends AdvancedRobot
 						isTracking = false;
 						break;
 				}
+			}
+			else
+			{
+				gunRotation = Double.POSITIVE_INFINITY;
 			}
 			// call execute
 			execute();
