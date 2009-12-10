@@ -187,7 +187,10 @@ public class WallE extends AdvancedRobot
 					resume();
 				// otherwise, call stop
 				else
+				{
 					stop();
+					nonAligned = true;
+				}
 				expectedEnemyEnergy = e.getEnergy();
 			}
 		}
