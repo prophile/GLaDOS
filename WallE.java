@@ -31,11 +31,14 @@ public class WallE extends AdvancedRobot {
 	double moveAmount; // How much to move
 	double oldEnemyHeading = 0.0;
 	
+	double expectedEnemyEnergy;
+	
 	int count = 0; // Keeps track of how long we've
 	// been searching for our target
 	double gunTurnAmt; // How much to turn our gun when searching
 	String trackName; // Name of the robot we're currently tracking
 	double wallTurnAngle = 90.0;
+	boolean stayStill = false;
 
 	PrintStream log;
 	
@@ -141,6 +144,24 @@ public class WallE extends AdvancedRobot {
 		if (trackName == null) {
 			trackName = e.getName();
 			log.println("Tracking " + trackName);
+			expectedEnemyEnergy = e.getEnergy();
+		} else {
+			if (e.getEnergy() < expectedEnemyEnergy) {
+				boolean changed = false;
+				if (stayStill) {
+					changed = true;
+					stayStill = false;
+				} else if (e.getDistance() > 100 && !(trackName.contains("Wall"))) {
+					changed = true;
+					stayStill = true;
+				}
+				if (changed && stayStill)
+					stop();
+				else if (changed)
+					resume();
+				log.println("Detected fire");
+				expectedEnemyEnergy = e.getEnergy();
+			}
 		}
 		// This is our target.  Reset count (see the run method)
 		count = 0;
@@ -228,6 +249,7 @@ public class WallE extends AdvancedRobot {
 	
 	public void onBulletHit(BulletHitEvent e){
 		hitCount++;
+		expectedEnemyEnergy = e.getEnergy();
 	}
 	
 	public void onBulletMissed(BulletMissedEvent e){
