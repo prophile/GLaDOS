@@ -15,7 +15,6 @@ import robocode.util.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.Random;
-import java.util.PriorityQueue;
 
 public class WallE extends AdvancedRobot
 {
@@ -30,7 +29,6 @@ public class WallE extends AdvancedRobot
 	
 	// shot tracking
 	double expectedEnemyEnergy = 100.0;
-	PriorityQueue<Long> expectedBullets;
 	
 	// movement
 	static double wallTurnAngle = Math.PI * 0.5;
@@ -48,7 +46,6 @@ public class WallE extends AdvancedRobot
 		setScanColor(Color.white);
 		
 		randomNumberGenerator = new Random();
-		expectedBullets = new PriorityQueue<Long>();
 		
 		// turn to a right angle to the walls
 		nonAligned = true;
@@ -69,15 +66,6 @@ public class WallE extends AdvancedRobot
 			}
 			// turn gun by the turn amount
 			setTurnGunRightRadians(gunRotation);
-			// check for bullets
-			long currentTime = getTime();
-			Long firstBullet = expectedBullets.peek();
-			if (firstBullet != null && (firstBullet.longValue() - currentTime < 20))
-			{
-				setAhead(0);
-				if (firstBullet.longValue() < currentTime)
-					expectedBullets.poll();
-			}
 			if (isReversed)
 				setAhead(Double.NEGATIVE_INFINITY);
 			else
@@ -173,13 +161,6 @@ public class WallE extends AdvancedRobot
 		{
 			if (e.getEnergy() < expectedEnemyEnergy)
 			{
-				// insert into the list
-				if (e.getDistance() > 600)
-				{
-					double power = expectedEnemyEnergy - e.getEnergy();
-					long targetTime = getTime() + (long)(e.getDistance() / bulletSpeed(power)); 
-					expectedBullets.add(new Long(targetTime));
-				}
 				// if one has, toggle bulletDodgeFreeze
 				bulletDodgeFreeze = !bulletDodgeFreeze;
 				// if bulletDodgeFreeze is false, call resume
