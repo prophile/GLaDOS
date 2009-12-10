@@ -39,8 +39,8 @@ public class WallE extends AdvancedRobot {
 
 	PrintStream log;
 	
-	int hitCount = 1;
-	int missCount = 1;
+	static int hitCount = 1;
+	static int missCount = 1;
 
 	/**
 	 * run: Move around the walls
@@ -76,7 +76,7 @@ public class WallE extends AdvancedRobot {
 			/*if (getX() < 8 || getY() < 8 || getX() > (getBattleFieldWidth() - 8) || getY() > (getBattleFieldHeight() - 8))
 				turnDueToWall();
 			else*/
-				setAhead(moveAmount);
+			setAhead(moveAmount);
 			// Keep track of how long we've been looking
 			count++;
 			// If we've haven't seen our target for 2 turns, look left
