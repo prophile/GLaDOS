@@ -301,7 +301,7 @@ public class WallE extends AdvancedRobot
 	public void onHitByBullet(HitByBulletEvent event)
 	{
 		// randomly swap walls and directions
-		switch (randomNumberGenerator.nextInt(7))
+		switch (randomNumberGenerator.nextInt(8))
 		{
 		case 0:
 			turnLeftRadians(wallTurnAngle);
@@ -309,6 +309,9 @@ public class WallE extends AdvancedRobot
 			break;
 		case 1:
 			isReversed = true;
+			break;
+		case 2:
+			isReversed = false;
 			break;
 		}
 		// opponent will have gained energy
