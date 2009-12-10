@@ -152,6 +152,9 @@ public class WallE extends AdvancedRobot {
 		gunTurnAmt = normalRelativeAngleDegrees(e.getBearing() + (getHeading() - getRadarHeading()));
 		//setTurnGunRight(gunTurnAmt);
 		
+		if (getEnergy() < 20.0 && e.getDistance() > 500.0)
+			return;
+		
 		// This is circular tracking code, based on code from the wiki
 		double bulletPower = Math.min(3.0,getEnergy());
 		double myX = getX();
