@@ -1,16 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2008 Mathew A. Nelson and Robocode contributors
- * All rights reserved. This program and the accompanying materials
+ *  _  _  _ _______                   _______
+ *  |  |  | |_____| |      |      ___ |______
+ *  |__|__| |     | |_____ |_____     |______
+ *
+ * A bot by Chris Kirkham, Alistair Lynn & Dan May
+ *
+ * Uses code from 'Tracker' and 'Walls,' copyright (c) 2001, 2008 Mathew A. Nelson and Robocode contributors.
+ * This program and the accompanying materials
  * are made available under the terms of the Common Public License v1.0
  * which accompanies this distribution, and is available at
  * http://robocode.sourceforge.net/license/cpl-v10.html
- *
- * Contributors:
- *     Mathew A. Nelson
- *     - Initial implementation
- *     Flemming N. Larsen
- *     - Maintainance
- *******************************************************************************/
+ */
 package cda;
 
 import robocode.*;
@@ -21,11 +21,6 @@ import static robocode.util.Utils.normalRelativeAngleDegrees;
 import java.awt.*;
 import java.awt.geom.*;
 
-/**
- * Walls - a sample robot by Mathew Nelson, and maintained by Flemming N. Larsen
- * <p/>
- * Moves around the outer edge with the gun facing in.
- */
 public class WallE extends AdvancedRobot {
 
 	double moveAmount; // How much to move
@@ -64,9 +59,7 @@ public class WallE extends AdvancedRobot {
 		// Initialize moveAmount to the maximum possible for this battlefield.
 		moveAmount = Math.max(getBattleFieldWidth(), getBattleFieldHeight());
 
-		// turnLeft to face a wall.
-		// getHeading() % 90 means the remainder of
-		// getHeading() divided by 90.
+		// turn to the wall
 		turnLeft(getHeading() % 90);
 		
 		trackName = null; // Initialize to not tracking anyone
@@ -75,10 +68,6 @@ public class WallE extends AdvancedRobot {
 
 		while (true) {
 			setTurnGunRight(gunTurnAmt);
-			// Check to see if we're wallhitting
-			/*if (getX() < 8 || getY() < 8 || getX() > (getBattleFieldWidth() - 8) || getY() > (getBattleFieldHeight() - 8))
-				turnDueToWall();
-			else*/
 			setAhead(moveAmount);
 			// Keep track of how long we've been looking
 			count++;
@@ -122,10 +111,6 @@ public class WallE extends AdvancedRobot {
 		// Set the target
 		trackName = e.getName();
 		// Back up a bit.
-		// Note:  We won't get scan events while we're doing this!
-		// An AdvancedRobot might use setBack(); execute();
-		//gunTurnAmt = normalRelativeAngleDegrees(e.getBearing() + (getHeading() - getRadarHeading()));
-		//turnGunRight(gunTurnAmt);
 		fire(3);
 	}
 
@@ -165,12 +150,6 @@ public class WallE extends AdvancedRobot {
 		}
 		// This is our target.  Reset count (see the run method)
 		count = 0;
-		// If our target is too far away, turn and move toward it.
-		/*if (e.getDistance() > 150) {
-			gunTurnAmt = normalRelativeAngleDegrees(e.getBearing() + (getHeading() - getRadarHeading()));
-			setTurnGunRight(gunTurnAmt);
-			return;
-		}*/
 		
 		// Our target is close.
 		gunTurnAmt = normalRelativeAngleDegrees(e.getBearing() + (getHeading() - getRadarHeading()));
