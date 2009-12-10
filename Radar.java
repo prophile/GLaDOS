@@ -9,37 +9,37 @@ public class Radar {
 	private boolean sawRobot = false;
 	private double dRadarHeading = Math.PI / 4;
 
-	public Radar(GLaDOS g){
+	public Radar(GLaDOS g) {
 		owner = g;
 
-	}///cons
+	}// /cons
 
-	public void init(){
-		//owner.setAdjustGunForRobotTurn(false);
+	public void init() {
+		// owner.setAdjustGunForRobotTurn(false);
 	}
 
-	public void onScannedRobot(ScannedRobotEvent e){
+	public void onScannedRobot(ScannedRobotEvent e) {
 
-		//owner.setFire(1);
-		//sawRobot = true;
+		// owner.setFire(1);
+		// sawRobot = true;
 		dRadarHeading = -1 * dRadarHeading;
 
 		owner.setFire(1);
 
-	}//onscannedrobot
+	}// onscannedrobot
 
 	public void onHitByBullet(HitByBulletEvent e) {
 		owner.setTurnLeftRadians(Math.PI - e.getBearing());
 	}
 
-	public boolean didSeeRobot () {
+	public boolean didSeeRobot() {
 		return sawRobot;
 	}
 
-	public void update(){
+	public void update() {
 		sawRobot = false;
 		owner.setTurnRadarRightRadians(dRadarHeading);
 		owner.scan();
-	}//update
+	}// update
 
 }

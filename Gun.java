@@ -4,7 +4,7 @@ public class Gun {
 
 	private GLaDOS owner;
 
-	public Gun(GLaDOS g){
+	public Gun(GLaDOS g) {
 		owner = g;
 	}
 
@@ -13,5 +13,6 @@ public class Gun {
 			owner.setFire(1);
 	}
 
-	public void init(){}
+	public void init() {
+	}
 }
