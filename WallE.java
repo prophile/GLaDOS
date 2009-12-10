@@ -167,7 +167,8 @@ public class WallE extends AdvancedRobot {
 		else
 			bulletSize = 3;
 		
-		double bulletPower = Math.min(3.0,getEnergy());
+		// This is circular tracking code, based on code from the wiki
+		double bulletPower = bulletSize;
 		double myX = getX();
 		double myY = getY();
 		double absoluteBearing = getHeadingRadians() + e.getBearingRadians();
