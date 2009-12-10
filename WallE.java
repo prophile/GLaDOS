@@ -53,7 +53,7 @@ public class WallE extends AdvancedRobot
 		turnLeftRadians(getHeadingRadians() % (Math.PI * 0.5));
 		
 		setAdjustGunForRobotTurn(true);
-		double defaultGunRotationSpeed = Math.PI / 18.0;
+		double defaultGunRotationSpeed = Math.PI / 15.0;
 		gunRotation = defaultGunRotationSpeed;
 		
 		while (true)
