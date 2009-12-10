@@ -29,12 +29,15 @@ public class WallE extends AdvancedRobot
 	
 	// shot tracking
 	double expectedEnemyEnergy = 100.0;
+	boolean bulletDodgeFreeze = false;
 	
 	// movement
-	static double wallTurnAngle = Math.PI * 0.5;
-	boolean bulletDodgeFreeze = false;
-	boolean isReversed = false;
-	boolean nonAligned = false;
+	Movement movementStrategy;
+	
+	public Random randomNumberGenerator ()
+	{
+		return randomNumberGenerator;
+	}
 	
 	public void run ()
 	{
@@ -45,10 +48,10 @@ public class WallE extends AdvancedRobot
 		setBulletColor(Color.black);
 		setScanColor(Color.white);
 		
-		randomNumberGenerator = new Random();
+		movementStrategy = new WallMovement();
+		movementStrategy.init(this);
 		
-		// turn to a right angle to the walls
-		nonAligned = true;
+		randomNumberGenerator = new Random();
 		
 		setAdjustGunForRobotTurn(true);
 		double defaultGunRotationSpeed = Math.PI / 15.0;
@@ -56,20 +59,9 @@ public class WallE extends AdvancedRobot
 		
 		while (true)
 		{
-			if (nonAligned)
-			{
-				double rotate = getHeadingRadians() % (Math.PI * 0.5);
-				if (rotate < 0.001)
-					nonAligned = false;
-				else
-					setTurnLeftRadians(rotate);
-			}
+			movementStrategy.update();
 			// turn gun by the turn amount
 			setTurnGunRightRadians(gunRotation);
-			if (isReversed)
-				setAhead(Double.NEGATIVE_INFINITY);
-			else
-				setAhead(Double.POSITIVE_INFINITY);
 			// if tracking, increment trackingCount and:
 			if (isTracking)
 			{
@@ -107,37 +99,12 @@ public class WallE extends AdvancedRobot
 	
 	public void onHitWall(HitWallEvent e)
 	{
-		// do an immediate turn
-		if (isReversed)
-			turnRightRadians(wallTurnAngle);
-		else
-			turnLeftRadians(wallTurnAngle);
+		movementStrategy.onHitWall(e);
 	}
 	
 	public void onHitRobot(HitRobotEvent e)
 	{
-		double bearing = e.getBearingRadians();
-		if (Math.abs(bearing) < Math.PI * 0.5)
-		{
-			// if he's in front of us and we're evenly matched, back off then plough in again
-			if (e.getEnergy() < getEnergy()*0.5)
-			{
-				// do nothing and keep ramming
-			}
-			else if (e.getEnergy() < getEnergy()*1.2)
-			{
-				back(70);
-			}
-			else // otherwise back the hell away
-			{
-				isReversed = !isReversed;
-			}
-		}
-		else
-		{
-			// otherwise plough on ahead
-			ahead(70);
-		}
+		movementStrategy.onHitRobot(e);
 		// also, OPEN FIRE
 		fire(3);
 	}
@@ -170,7 +137,6 @@ public class WallE extends AdvancedRobot
 				else
 				{
 					stop();
-					nonAligned = true;
 				}
 				expectedEnemyEnergy = e.getEnergy();
 			}
@@ -286,20 +252,7 @@ public class WallE extends AdvancedRobot
 	
 	public void onHitByBullet(HitByBulletEvent event)
 	{
-		// randomly swap walls and directions
-		switch (randomNumberGenerator.nextInt(8))
-		{
-		case 0:
-			setTurnLeftRadians(wallTurnAngle);
-			wallTurnAngle = -wallTurnAngle;
-			break;
-		case 1:
-			isReversed = true;
-			break;
-		case 2:
-			isReversed = false;
-			break;
-		}
+		movementStrategy.onHitByBullet(event);
 		// opponent will have gained energy
 		expectedEnemyEnergy += robocode.Rules.getBulletDamage(event.getBullet().getPower());
 	}
