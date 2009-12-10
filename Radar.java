@@ -6,8 +6,9 @@ import robocode.ScannedRobotEvent;
 public class Radar {
 
 	private GLaDOS owner;
-	private boolean sawRobot = false;
 	private double dRadarHeading = Math.PI / 4;
+	private double opponentBearing;
+	private int lastTrack = 0;
 
 	public Radar(GLaDOS g) {
 		owner = g;
@@ -17,28 +18,35 @@ public class Radar {
 	public void init() {
 		// owner.setAdjustGunForRobotTurn(false);
 	}
+	
+	public boolean isTracking () {
+		return lastTrack > 0;
+	}
+	
+	public double getAngleToTarget () {
+		return opponentBearing;
+	}
 
 	public void onScannedRobot(ScannedRobotEvent e) {
-
-		// owner.setFire(1);
-		// sawRobot = true;
-		dRadarHeading = -1 * dRadarHeading;
-
-		owner.setFire(1);
-
+		if (lastTrack == 0) {
+			// we've just picked up the other bot
+			dRadarHeading = -1 * dRadarHeading;
+			// TODO: stuff
+		}
+		opponentBearing = e.getBearing();
+		lastTrack = 15;
 	}// onscannedrobot
 
 	public void onHitByBullet(HitByBulletEvent e) {
-		owner.setTurnLeftRadians(Math.PI - e.getBearing());
-	}
-
-	public boolean didSeeRobot() {
-		return sawRobot;
 	}
 
 	public void update() {
-		sawRobot = false;
-		owner.setTurnRadarRightRadians(dRadarHeading);
+		if (lastTrack > 0) {
+			// turn to follow the bot
+		} else {
+			// spin right round
+			owner.setTurnRadarRightRadians(dRadarHeading);
+		}
 		owner.scan();
 	}// update
 

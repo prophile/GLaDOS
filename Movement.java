@@ -8,7 +8,8 @@ public class Movement {
 	}
 
 	public void update() {
-		owner.setAhead(50);
+		owner.setAhead(Double.POSITIVE_INFINITY);
+		owner.setTurnLeftRadians(0.0001);
 	}
 
 	public void init() {
