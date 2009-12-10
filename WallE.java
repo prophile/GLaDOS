@@ -115,8 +115,11 @@ public class WallE extends AdvancedRobot
 		double bearing = e.getBearingRadians();
 		if (Math.abs(bearing) < Math.PI * 0.5)
 		{
-			// if he's in front of us, back up a bit
-			back(70);
+			// if he's in front of us and we're evenly matched, back off then plough in again
+			if (e.getEnergy() < getEnergy()*1.2)
+				back(70);
+			else // otherwise back the hell away
+				isReversed = !isReversed;
 		}
 		else
 		{
@@ -147,9 +150,12 @@ public class WallE extends AdvancedRobot
 			if (e.getEnergy() < expectedEnemyEnergy)
 			{
 				// insert into the list
-				double power = expectedEnemyEnergy - e.getEnergy();
-				long targetTime = getTime() + (long)(e.getDistance() / bulletSpeed(power)); 
-				expectedBullets.add(new Long(targetTime));
+				if (e.getDistance() > 600)
+				{
+					double power = expectedEnemyEnergy - e.getEnergy();
+					long targetTime = getTime() + (long)(e.getDistance() / bulletSpeed(power)); 
+					expectedBullets.add(new Long(targetTime));
+				}
 				// if one has, toggle bulletDodgeFreeze
 				bulletDodgeFreeze = !bulletDodgeFreeze;
 				// if bulletDodgeFreeze is false, call resume
@@ -278,6 +284,8 @@ public class WallE extends AdvancedRobot
 			isReversed = true;
 			break;
 		}
+		// opponent will have gained energy
+		expectedEnemyEnergy += robocode.Rules.getBulletDamage(event.getBullet().getPower());
 	}
 	
 	public void onBulletHit(BulletHitEvent e)
