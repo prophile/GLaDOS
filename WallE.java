@@ -210,8 +210,18 @@ public class WallE extends AdvancedRobot {
 	public void onWin(WinEvent e) {
 		setAhead(0);
 		for (int i = 0; i < 50; i++) {
-			turnRight(30);
-			turnLeft(30);
+			setBodyColor(Color.black);
+			setGunColor(Color.yellow);
+			setRadarColor(Color.black);
+			setTurnRight(Double.POSITIVE_INFINITY);
+			setTurnGunLeft(Double.POSITIVE_INFINITY);
+			execute();
+			setBodyColor(Color.yellow);
+			setGunColor(Color.black);
+			setRadarColor(Color.yellow);
+			setTurnRight(Double.POSITIVE_INFINITY);
+			setTurnGunLeft(Double.POSITIVE_INFINITY);
+			execute();
 		}
 	}
 	
