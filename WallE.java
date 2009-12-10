@@ -15,6 +15,7 @@ package cda;
 
 import robocode.*;
 import robocode.util.*;
+import java.io.*;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
 
 import java.awt.*;
@@ -35,6 +36,8 @@ public class WallE extends AdvancedRobot {
 	double gunTurnAmt; // How much to turn our gun when searching
 	String trackName; // Name of the robot we're currently tracking
 	double wallTurnAngle = 90.0;
+
+	PrintStream log;
 	
 	int hitCount = 1;
 	int missCount = 1;
@@ -43,6 +46,11 @@ public class WallE extends AdvancedRobot {
 	 * run: Move around the walls
 	 */
 	public void run() {
+		try {
+			log = new PrintStream(new RobocodeFileOutputStream(getDataFile("wall.log")));
+		} catch (IOException e) {
+			// do nothing, this will never happen, honest.
+		}
 		// Set colors
 		setBodyColor(Color.black);
 		setGunColor(Color.yellow);
@@ -132,7 +140,7 @@ public class WallE extends AdvancedRobot {
 		// If we don't have a target, well, now we do!
 		if (trackName == null) {
 			trackName = e.getName();
-			out.println("Tracking " + trackName);
+			log.println("Tracking " + trackName);
 		}
 		// This is our target.  Reset count (see the run method)
 		count = 0;
