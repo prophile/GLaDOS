@@ -123,10 +123,18 @@ public class WallE extends AdvancedRobot
 		if (Math.abs(bearing) < Math.PI * 0.5)
 		{
 			// if he's in front of us and we're evenly matched, back off then plough in again
-			if (e.getEnergy() < getEnergy()*1.2)
+			if (e.getEnergy() < getEnergy()*0.5)
+			{
+				// do nothing and keep ramming
+			}
+			else if (e.getEnergy() < getEnergy()*1.2)
+			{
 				back(70);
+			}
 			else // otherwise back the hell away
+			{
 				isReversed = !isReversed;
+			}
 		}
 		else
 		{
