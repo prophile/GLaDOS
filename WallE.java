@@ -28,6 +28,7 @@ import java.awt.geom.*;
 public class WallE extends AdvancedRobot {
 
 	double moveAmount; // How much to move
+	double oldEnemyHeading = 0.0;
 	
 	int count = 0; // Keeps track of how long we've
 	// been searching for our target
@@ -144,7 +145,7 @@ public class WallE extends AdvancedRobot {
 		
 		// Our target is close.
 		gunTurnAmt = normalRelativeAngleDegrees(e.getBearing() + (getHeading() - getRadarHeading()));
-		setTurnGunRight(gunTurnAmt);
+		//setTurnGunRight(gunTurnAmt);
 		int bulletSize;
 		double missHitRatio = 1.0;
 		if (missCount + hitCount > 40)
@@ -157,8 +158,50 @@ public class WallE extends AdvancedRobot {
 			bulletSize = 2;
 		else
 			bulletSize = 3;
+		
+		double bulletPower = Math.min(3.0,getEnergy());
+		double myX = getX();
+		double myY = getY();
+		double absoluteBearing = getHeadingRadians() + e.getBearingRadians();
+		double enemyX = getX() + e.getDistance() * Math.sin(absoluteBearing);
+		double enemyY = getY() + e.getDistance() * Math.cos(absoluteBearing);
+		double enemyHeading = e.getHeadingRadians();
+		double enemyHeadingChange = enemyHeading - oldEnemyHeading;
+		double enemyVelocity = e.getVelocity();
+		oldEnemyHeading = enemyHeading;
+		
+		double deltaTime = 0;
+		double battleFieldHeight = getBattleFieldHeight(), 
+		battleFieldWidth = getBattleFieldWidth();
+		double predictedX = enemyX, predictedY = enemyY;
+		while((++deltaTime) * (20.0 - 3.0 * bulletPower) < 
+			  Point2D.Double.distance(myX, myY, predictedX, predictedY)){		
+			predictedX += Math.sin(enemyHeading) * enemyVelocity;
+			predictedY += Math.cos(enemyHeading) * enemyVelocity;
+			enemyHeading += enemyHeadingChange;
+			if(	predictedX < 18.0 
+			   || predictedY < 18.0
+			   || predictedX > battleFieldWidth - 18.0
+			   || predictedY > battleFieldHeight - 18.0){
+				
+				predictedX = Math.min(Math.max(18.0, predictedX), 
+									  battleFieldWidth - 18.0);	
+				predictedY = Math.min(Math.max(18.0, predictedY), 
+									  battleFieldHeight - 18.0);
+				break;
+			}
+		}
+		double theta = Utils.normalAbsoluteAngle(Math.atan2(
+															predictedX - getX(), predictedY - getY()));
+		
+		
+		setTurnGunRightRadians(Utils.normalRelativeAngle(
+														 theta - getGunHeadingRadians()));
 
-		setFire(bulletSize);
+		setTurnRadarRightRadians(Utils.normalRelativeAngle(
+														   absoluteBearing - getRadarHeadingRadians()));
+
+		fire(bulletSize);
 
 
 		//scan();
