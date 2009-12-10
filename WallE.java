@@ -29,7 +29,6 @@ public class WallE extends AdvancedRobot
 	
 	// shot tracking
 	double expectedEnemyEnergy = 100.0;
-	boolean bulletDodgeFreeze = false;
 	
 	// movement
 	Movement movementStrategy;
@@ -128,16 +127,8 @@ public class WallE extends AdvancedRobot
 		{
 			if (e.getEnergy() < expectedEnemyEnergy)
 			{
-				// if one has, toggle bulletDodgeFreeze
-				bulletDodgeFreeze = !bulletDodgeFreeze;
-				// if bulletDodgeFreeze is false, call resume
-				if (bulletDodgeFreeze == false)
-					resume();
-				// otherwise, call stop
-				else
-				{
-					stop();
-				}
+				double power = expectedEnemyEnergy - e.getEnergy();
+				movementStrategy.detectedShot(e, power);
 				expectedEnemyEnergy = e.getEnergy();
 			}
 		}

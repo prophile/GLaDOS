@@ -16,5 +16,5 @@ abstract public class Movement
 	abstract void onHitWall (HitWallEvent e);
 	abstract void onHitRobot (HitRobotEvent e);
 	abstract void onHitByBullet (HitByBulletEvent e);
-	abstract void didFreeze ();
+	abstract void detectedShot (ScannedRobotEvent e, double shotPower);
 }

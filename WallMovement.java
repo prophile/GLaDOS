@@ -10,6 +10,7 @@ public class WallMovement extends Movement
 	static double wallTurnAngle = Math.PI * 0.5;
 	boolean isReversed = false;
 	boolean nonAligned = true;
+	boolean bulletDodgeFreeze = false;
 	
 	public void onHitByBullet(HitByBulletEvent e)
 	{
@@ -75,8 +76,18 @@ public class WallMovement extends Movement
 			owner.setAhead(Double.POSITIVE_INFINITY);
 	}
 	
-	void didFreeze ()
+	void detectedShot (ScannedRobotEvent e, double shotPower)
 	{
-		nonAligned = true;
+		// if one has, toggle bulletDodgeFreeze
+		bulletDodgeFreeze = !bulletDodgeFreeze;
+		// if bulletDodgeFreeze is false, call resume
+		if (bulletDodgeFreeze == false)
+			owner.resume();
+		// otherwise, call stop
+		else
+		{
+			owner.stop();
+			nonAligned = true;
+		}
 	}
 }
