@@ -15,6 +15,7 @@ import robocode.util.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.Random;
+import java.util.PriorityQueue;
 
 public class WallE extends AdvancedRobot
 {
@@ -29,12 +30,12 @@ public class WallE extends AdvancedRobot
 	
 	// shot tracking
 	double expectedEnemyEnergy = 100.0;
+	PriorityQueue<Long> expectedBullets;
 	
 	// movement
 	static double wallTurnAngle = Math.PI * 0.5;
-	static int bulletDodgeStrategy = 1;
 	boolean bulletDodgeFreeze = false;
-	boolean bulletDodgeReverseDirection = false;
+	boolean isReversed = false;
 	
 	public void run ()
 	{
@@ -46,6 +47,7 @@ public class WallE extends AdvancedRobot
 		setScanColor(Color.white);
 		
 		randomNumberGenerator = new Random();
+		expectedBullets = new PriorityQueue<Long>();
 		
 		// turn to a right angle to the walls
 		turnLeftRadians(getHeadingRadians() % (Math.PI * 0.5));
@@ -58,11 +60,19 @@ public class WallE extends AdvancedRobot
 		{
 			// turn gun by the turn amount
 			setTurnGunRightRadians(gunRotation);
-			// plough ahead
-			if (bulletDodgeReverseDirection)
-				setAhead(Double.POSITIVE_INFINITY);
-			else
+			// check for bullets
+			long currentTime = getTime();
+			Long firstBullet = expectedBullets.peek();
+			if (firstBullet != null && (firstBullet.longValue() - currentTime < 20))
+			{
+				setAhead(0);
+				if (firstBullet.longValue() < currentTime)
+					expectedBullets.poll();
+			}
+			if (isReversed)
 				setAhead(Double.NEGATIVE_INFINITY);
+			else
+				setAhead(Double.POSITIVE_INFINITY);
 			// if tracking, increment trackingCount and:
 			if (isTracking)
 			{
@@ -94,7 +104,10 @@ public class WallE extends AdvancedRobot
 	public void onHitWall(HitWallEvent e)
 	{
 		// do an immediate turn
-		turnLeftRadians(wallTurnAngle);
+		if (isReversed)
+			turnRightRadians(wallTurnAngle);
+		else
+			turnLeftRadians(wallTurnAngle);
 	}
 	
 	public void onHitRobot(HitRobotEvent e)
@@ -133,31 +146,18 @@ public class WallE extends AdvancedRobot
 		{
 			if (e.getEnergy() < expectedEnemyEnergy)
 			{
-				if (e.getDistance() > 300)
-				{
-					switch (bulletDodgeStrategy)
-					{
-						case 1:	// alternately freeze and continue			
-							// if one has, toggle bulletDodgeFreeze
-							bulletDodgeFreeze = !bulletDodgeFreeze;
-							// if bulletDodgeFreeze is false, call resume
-							if (bulletDodgeFreeze == false)
-								resume();
-							// otherwise, call stop
-							else
-								stop();
-							break;
-						case 2: // switch directions when hit by a bullet
-							bulletDodgeReverseDirection = true;
-							wallTurnAngle = -wallTurnAngle;
-							break;
-						case 3: // plough on, ignoring firings;
-							break;
-						case 0: // dodge back on bullets
-							back(100);
-							break;
-					}
-				}
+				// insert into the list
+				double power = expectedEnemyEnergy - e.getEnergy();
+				long targetTime = getTime() + (long)(e.getDistance() / bulletSpeed(power)); 
+				expectedBullets.add(new Long(targetTime));
+				// if one has, toggle bulletDodgeFreeze
+				bulletDodgeFreeze = !bulletDodgeFreeze;
+				// if bulletDodgeFreeze is false, call resume
+				if (bulletDodgeFreeze == false)
+					resume();
+				// otherwise, call stop
+				else
+					stop();
 				expectedEnemyEnergy = e.getEnergy();
 			}
 		}
@@ -265,13 +265,18 @@ public class WallE extends AdvancedRobot
 		}
 	}
 	
-	public void onHitBybullet(HitByBulletEvent event)
+	public void onHitByBullet(HitByBulletEvent event)
 	{
 		// randomly swap walls and directions
-		if (randomNumberGenerator.nextInt(7) == 0)
+		switch (randomNumberGenerator.nextInt(7))
 		{
+		case 0:
 			turnLeftRadians(wallTurnAngle);
 			wallTurnAngle = -wallTurnAngle;
+			break;
+		case 1:
+			isReversed = true;
+			break;
 		}
 	}
 	
@@ -279,11 +284,5 @@ public class WallE extends AdvancedRobot
 	{
 		// we hit the opponent, so we now have a new guess as to their energy
 		expectedEnemyEnergy = e.getEnergy();
-	}
-	
-	public void onDeath(DeathEvent e)
-	{
-		// obviously this bullet dodging strategy didn't work, skip to the next
-		//bulletDodgeStrategy = (bulletDodgeStrategy + 1) % 2;
 	}
 }
