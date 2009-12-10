@@ -64,9 +64,9 @@ public class WallE extends AdvancedRobot {
 		while (true) {
 			setTurnGunRight(gunTurnAmt);
 			// Check to see if we're wallhitting
-			if (getX() < 8 || getY() < 8 || getX() > (getBattleFieldWidth() - 8) || getY() > (getBattleFieldHeight() - 8))
+			/*if (getX() < 8 || getY() < 8 || getX() > (getBattleFieldWidth() - 8) || getY() > (getBattleFieldHeight() - 8))
 				turnDueToWall();
-			else
+			else*/
 				setAhead(moveAmount);
 			// Keep track of how long we've been looking
 			count++;
@@ -88,7 +88,7 @@ public class WallE extends AdvancedRobot {
 	
 	public void turnDueToWall () {
 		setAhead(0);
-		back(10);
+		//back(10);
 		turnLeft(wallTurnAngle);
 	}
 	
@@ -147,8 +147,8 @@ public class WallE extends AdvancedRobot {
 		setTurnGunRight(gunTurnAmt);
 		int bulletSize;
 		double missHitRatio = 1.0;
-		/*if (missCount + hitCount > 40)
-			missHitRatio = (double)missCount / (double)hitCount;*/
+		if (missCount + hitCount > 40)
+			missHitRatio = (double)missCount / (double)hitCount;
 		if (e.getDistance() > (800.0 * missHitRatio))
 			return;
 		else if (e.getDistance() > (500.0 * missHitRatio))
@@ -158,7 +158,7 @@ public class WallE extends AdvancedRobot {
 		else
 			bulletSize = 3;
 
-		fire(bulletSize);
+		setFire(bulletSize);
 
 
 		//scan();
