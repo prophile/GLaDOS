@@ -304,7 +304,7 @@ public class WallE extends AdvancedRobot
 		switch (randomNumberGenerator.nextInt(8))
 		{
 		case 0:
-			turnLeftRadians(wallTurnAngle);
+			setTurnLeftRadians(wallTurnAngle);
 			wallTurnAngle = -wallTurnAngle;
 			break;
 		case 1:
