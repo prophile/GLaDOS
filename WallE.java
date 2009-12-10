@@ -36,6 +36,7 @@ public class WallE extends AdvancedRobot
 	static double wallTurnAngle = Math.PI * 0.5;
 	boolean bulletDodgeFreeze = false;
 	boolean isReversed = false;
+	boolean nonAligned = false;
 	
 	public void run ()
 	{
@@ -50,7 +51,7 @@ public class WallE extends AdvancedRobot
 		expectedBullets = new PriorityQueue<Long>();
 		
 		// turn to a right angle to the walls
-		turnLeftRadians(getHeadingRadians() % (Math.PI * 0.5));
+		nonAligned = true;
 		
 		setAdjustGunForRobotTurn(true);
 		double defaultGunRotationSpeed = Math.PI / 15.0;
@@ -58,6 +59,14 @@ public class WallE extends AdvancedRobot
 		
 		while (true)
 		{
+			if (nonAligned)
+			{
+				double rotate = getHeadingRadians() % (Math.PI * 0.5);
+				if (rotate < 0.001)
+					nonAligned = false;
+				else
+					setTurnLeftRadians(rotate);
+			}
 			// turn gun by the turn amount
 			setTurnGunRightRadians(gunRotation);
 			// check for bullets
