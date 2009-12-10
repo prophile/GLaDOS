@@ -32,13 +32,10 @@ public class WallE extends AdvancedRobot {
 	// been searching for our target
 	double gunTurnAmt; // How much to turn our gun when searching
 	String trackName; // Name of the robot we're currently tracking
-	double wallTurnAngle = 90.0;
+	static double wallTurnAngle = 90.0;
 	boolean stayStill = false;
 
 	PrintStream log;
-	
-	static int hitCount = 1;
-	static int missCount = 1;
 
 	/**
 	 * run: Move around the walls
@@ -154,21 +151,9 @@ public class WallE extends AdvancedRobot {
 		// Our target is close.
 		gunTurnAmt = normalRelativeAngleDegrees(e.getBearing() + (getHeading() - getRadarHeading()));
 		//setTurnGunRight(gunTurnAmt);
-		int bulletSize;
-		double missHitRatio = 1.0;
-		if (missCount + hitCount > 40)
-			missHitRatio = (double)missCount / (double)hitCount;
-		if (e.getDistance() > (800.0 * missHitRatio))
-			return;
-		else if (e.getDistance() > (500.0 * missHitRatio))
-			bulletSize = 1;
-		else if (e.getDistance() > (150.0 * missHitRatio))
-			bulletSize = 2;
-		else
-			bulletSize = 3;
 		
 		// This is circular tracking code, based on code from the wiki
-		double bulletPower = bulletSize;
+		double bulletPower = Math.min(3.0,getEnergy());
 		double myX = getX();
 		double myY = getY();
 		double absoluteBearing = getHeadingRadians() + e.getBearingRadians();
@@ -210,7 +195,7 @@ public class WallE extends AdvancedRobot {
 		setTurnRadarRightRadians(Utils.normalRelativeAngle(
 														   absoluteBearing - getRadarHeadingRadians()));
 
-		fire(bulletSize);
+		fire(bulletPower);
 
 
 		//scan();
@@ -228,12 +213,7 @@ public class WallE extends AdvancedRobot {
 	}
 	
 	public void onBulletHit(BulletHitEvent e){
-		hitCount++;
 		expectedEnemyEnergy = e.getEnergy();
-	}
-	
-	public void onBulletMissed(BulletMissedEvent e){
-		missCount++;
 	}
 	
 	public void onDeath(DeathEvent e) {
