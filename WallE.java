@@ -51,7 +51,7 @@ public class WallE extends AdvancedRobot
 		
 		randomNumberGenerator = new Random();
 		
-		movementStrategy = new AntiGravityMovement();
+		movementStrategy = new WaveSurfMovement();
 		movementStrategy.init(this);
 		
 		setAdjustGunForRobotTurn(true);
@@ -162,6 +162,10 @@ public class WallE extends AdvancedRobot
 		double bulletPower = Math.min(getEnergy(), requestedBulletPower);
 		double targetAngle = targettingStrategy.target(e, bulletPower);
 		double enemyAngle = e.getBearingRadians() + getHeadingRadians();
+		double distance = e.getDistance();
+		double enemyX = getX() + distance*Math.sin(enemyAngle);
+		double enemyY = getY() + distance*Math.cos(enemyAngle);
+		movementStrategy.enemyPosition(e, enemyX, enemyY);
 		// rotate the gun by the relevant amount
 		double gunSwivel = Utils.normalRelativeAngle(targetAngle - getGunHeadingRadians());
 		setTurnGunRightRadians(gunSwivel);

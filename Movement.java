@@ -16,6 +16,6 @@ abstract public class Movement
 	abstract public void onHitWall (HitWallEvent e);
 	abstract public void onHitRobot (HitRobotEvent e);
 	abstract public void onHitByBullet (HitByBulletEvent e);
-	abstract public void enemyPosition (double x, double y);
+	abstract public void enemyPosition (ScannedRobotEvent e, double x, double y);
 	abstract public void detectedShot (ScannedRobotEvent e, double shotPower);
 }

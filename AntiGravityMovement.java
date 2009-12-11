@@ -101,8 +101,8 @@ public class AntiGravityMovement extends Movement
 		enemyPresenceIndicator--;
 		if (enemyPresenceIndicator > 0)
 		{
-		  forceX += pointForceLinearX(enemyX - x, enemyY - y, 300.0);
-		  forceY += pointForceLinearY(enemyX - x, enemyY - y, 300.0);
+			forceX += pointForceLinearX(enemyX - x, enemyY - y, -10.0);
+			forceY += pointForceLinearY(enemyX - x, enemyY - y, -10.0);
 		}
 		
 		/*if (owner.randomNumberGenerator().nextInt(40) == 4)
@@ -138,7 +138,7 @@ public class AntiGravityMovement extends Movement
 			owner.setAhead(Double.POSITIVE_INFINITY);
 	}
 	
-	public void enemyPosition (double x, double y)
+	public void enemyPosition (ScannedRobotEvent e, double x, double y)
 	{
 		enemyX = x;
 		enemyY = y;
