@@ -20,8 +20,6 @@ public class WaveSurfMovement extends Movement
 	public ArrayList<Integer> surfDirections;
 	public ArrayList<Double> surfAbsoluteBearings;
 
-	public static double _oppEnergy = 100.0;
-
 	/** This is a rectangle that represents an 800x600 battle field,
 	 * used for a simple, iterative WallSmoothing method (by PEZ).
 	 * If you're not familiar with WallSmoothing, the wall stick indicates

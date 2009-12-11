@@ -30,7 +30,7 @@ public class WallMovement extends Movement
 		}
 	}
 	
-	public void enemyPosition(ScannedRobotevent e, double x, double y)
+	public void enemyPosition(ScannedRobotEvent e, double x, double y)
 	{
 	}
 	

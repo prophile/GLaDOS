@@ -35,6 +35,12 @@ public class WallE extends AdvancedRobot
 	private Movement movementStrategy;
 	private Targetting targettingStrategy;
 	
+	// strategy selection
+	private static int movementStrategyNumber = 0;
+	private static int targettingStrategyNumber = 0;
+	private static int wins = 0;
+	private static int losses = 0;
+	
 	public Random randomNumberGenerator ()
 	{
 		return randomNumberGenerator;
@@ -50,9 +56,51 @@ public class WallE extends AdvancedRobot
 		setScanColor(Color.white);
 		
 		randomNumberGenerator = new Random();
+		if (wins + losses > 8)
+		{
+			if (wins >= 5)
+			{
+				// stick with this strategy
+				wins = 0;
+				losses = -2;
+			}
+			else
+			{
+				// reshuffle
+				movementStrategyNumber = randomNumberGenerator.nextInt(3);
+				targettingStrategyNumber = randomNumberGenerator.nextInt(3);
+				wins = 0;
+				losses = 0;
+			}
+		}
 		
-		movementStrategy = new WaveSurfMovement();
+		switch (movementStrategyNumber)
+		{
+		case 0:
+			movementStrategy = new WaveSurfMovement();
+			break;
+		case 1:
+			movementStrategy = new AntiGravityMovement();
+			break;
+		case 2:
+			movementStrategy = new WallMovement();
+			break;
+		}
 		movementStrategy.init(this);
+		
+		switch (targettingStrategyNumber)
+		{
+		case 0:
+			targettingStrategy = new CircularTargetting();
+			break;
+		case 1:
+			targettingStrategy = new NaiveTargetting();
+			break;
+		case 2:
+			targettingStrategy = new LinearTargetting();
+			break;
+		}
+		targettingStrategy.init(this);
 		
 		setAdjustGunForRobotTurn(true);
 		gunRotation = defaultGunRotationSpeed;
@@ -118,23 +166,6 @@ public class WallE extends AdvancedRobot
 		{
 			isTracking = true;
 			expectedEnemyEnergy = e.getEnergy();
-			if (e.getName().contains("Stordy"))
-			{
-				// switch to naive targetting
-				targettingStrategy = new NaiveTargetting();
-				targettingStrategy.init(this);
-			}
-			else if (e.getName().contains("Wall"))
-			{
-				targettingStrategy = new LinearTargetting();
-				targettingStrategy.init(this);
-			}
-			else
-			{
-				// switch to circular targetting
-				targettingStrategy = new CircularTargetting();
-				targettingStrategy.init(this);
-			}
 		}
 		// if we do, check the energy to see if a shot has been fired
 		else
@@ -190,12 +221,18 @@ public class WallE extends AdvancedRobot
 	{
 		setAhead(0);
 		// do a little victory dance
+		wins++;
 		while (true)
 		{
 			setTurnRightRadians(Double.POSITIVE_INFINITY);
 			setTurnGunLeftRadians(Double.POSITIVE_INFINITY);
 			execute();
 		}
+	}
+	
+	public void onDeath(DeathEvent e)
+	{
+		losses++;
 	}
 	
 	public void onHitByBullet(HitByBulletEvent event)
