@@ -29,6 +29,7 @@ public class WallE extends AdvancedRobot
 	
 	// shot tracking
 	private double expectedEnemyEnergy = 100.0;
+	private static double defaultGunRotationSpeed = Math.PI / 15.0;
 	
 	// strategies
 	private Movement movementStrategy;
@@ -57,7 +58,6 @@ public class WallE extends AdvancedRobot
 		targettingStrategy.init(this);
 		
 		setAdjustGunForRobotTurn(true);
-		double defaultGunRotationSpeed = Math.PI / 15.0;
 		gunRotation = defaultGunRotationSpeed;
 		
 		while (true)
@@ -75,13 +75,10 @@ public class WallE extends AdvancedRobot
 				trackingCount++;
 				switch (trackingCount)
 				{
-					case 0:
-					case 1:
-						gunRotation = defaultGunRotationSpeed;
 					case 3:
-						gunRotation = -defaultGunRotationSpeed;
+						gunRotation = -gunRotation;
 					case 6:
-						gunRotation = defaultGunRotationSpeed;
+						gunRotation = -gunRotation;
 						break;
 					case 12: // give up the hunt
 						isTracking = false;
@@ -134,8 +131,6 @@ public class WallE extends AdvancedRobot
 				expectedEnemyEnergy = e.getEnergy();
 			}
 		}
-		// update the turn rate so that next frame we'll be pointing correctly
-		gunRotation = Utils.normalRelativeAngle(e.getBearingRadians() + (getHeadingRadians() - getRadarHeadingRadians()));
 		// reset trackingCount to zero, since we know exactly where our target is
 		trackingCount = 0;
 		// if we have less than 50 energy, and it's more than 500 pixels away, abort now
@@ -155,6 +150,14 @@ public class WallE extends AdvancedRobot
 		// rotate the gun by the relevant amount
 		double gunSwivel = Utils.normalRelativeAngle(targetAngle - getGunHeadingRadians());
 		setTurnGunRightRadians(gunSwivel);
+		if (gunSwivel > 0.0)
+		{
+			gunRotation = defaultGunRotationSpeed;
+		}
+		else
+		{
+			gunRotation = -defaultGunRotationSpeed;
+		}
 		// rotate the radar SEPARATELY so that we keep it pointing at our opponent and not their predicted position
 		double radarSwivel = Utils.normalRelativeAngle(enemyAngle - getRadarHeadingRadians());
 		setTurnRadarRightRadians(radarSwivel);

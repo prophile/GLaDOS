@@ -14,8 +14,8 @@ public class AntiGravityMovement extends Movement
 	double randomForceX2, randomForceY2;
 	double randomForceX3, randomForceY3;
 	double randomForceX4, randomForceY4;
-	boolean bulletDodgeFreeze = false;
 	int enemyPresenceIndicator = 0;
+	boolean isReversing = false;
 	
 	public void init(WallE bot)
 	{
@@ -88,6 +88,9 @@ public class AntiGravityMovement extends Movement
 		  forceY += pointForceY(enemyX - x, enemyY - y, -300.0);
 		}
 		
+		if (owner.randomNumberGenerator().nextInt(40) == 4)
+			isReversing = !isReversing;
+		
 		// random point force
 		forceX += pointForceX(randomForceX1 - x, randomForceY1 - y, 50.0);
 		forceY += pointForceY(randomForceX1 - x, randomForceY1 - y, 50.0);
@@ -107,8 +110,15 @@ public class AntiGravityMovement extends Movement
 		double rotation = Utils.normalRelativeAngle(angle - owner.getHeadingRadians());
 		double totalForceMagnitude = (forceX*forceX) + (forceY*forceY);
 		owner.setBodyColor(new Color(0.0f, Math.min(1.0f, (float)totalForceMagnitude * 0.1f), 0.0f));
+		if (isReversing)
+		{
+			rotation = -rotation;
+		}
 		owner.setTurnRightRadians(rotation);
-		owner.setAhead(Double.POSITIVE_INFINITY);
+		if (isReversing)
+			owner.setAhead(Double.NEGATIVE_INFINITY);
+		else
+			owner.setAhead(Double.POSITIVE_INFINITY);
 	}
 	
 	public void enemyPosition (double x, double y)
@@ -121,12 +131,6 @@ public class AntiGravityMovement extends Movement
 	public void detectedShot (ScannedRobotEvent e, double shotPower)
 	{
 		// if one has, toggle bulletDodgeFreeze
-		bulletDodgeFreeze = !bulletDodgeFreeze;
-		// if bulletDodgeFreeze is false, call resume
-		if (bulletDodgeFreeze == false)
-			owner.resume();
-		// otherwise, call stop
-		else
-			owner.stop();
+		isReversing = !isReversing;
 	}
 }
