@@ -67,8 +67,8 @@ public class WallE extends AdvancedRobot
 			else
 			{
 				// reshuffle
-				movementStrategyNumber = randomNumberGenerator.nextInt(3);
-				targettingStrategyNumber = randomNumberGenerator.nextInt(3);
+				//movementStrategyNumber = randomNumberGenerator.nextInt(3);
+				//targettingStrategyNumber = randomNumberGenerator.nextInt(3);
 				wins = 0;
 				losses = 0;
 			}

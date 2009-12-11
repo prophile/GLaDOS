@@ -5,338 +5,261 @@ import robocode.util.*;
 import java.awt.geom.*;
 import java.awt.*;
 import java.util.Random;
-import java.awt.geom.*;     // for Point2D's
-import java.util.ArrayList; // for collection of waves
+import java.util.ArrayList;
 
 public class WaveSurfMovement extends Movement
 {
-	// movement
-	public static int BINS = 47;
-	public static double surfStats[] = new double[BINS];
-	public Point2D.Double selfLocation;     // our bot's location
-	public Point2D.Double enemyLocation;  // enemy bot's location
-
-	public ArrayList<EnemyWave> enemyWaves;
-	public ArrayList<Integer> surfDirections;
-	public ArrayList<Double> surfAbsoluteBearings;
-
-	/** This is a rectangle that represents an 800x600 battle field,
-	 * used for a simple, iterative WallSmoothing method (by PEZ).
-	 * If you're not familiar with WallSmoothing, the wall stick indicates
-	 * the amount of space we try to always have on either end of the tank
-	 * (extending straight out the front or back) before touching a wall.
-	 */
-	public static Rectangle2D.Double _fieldRect
-	    = new java.awt.geom.Rectangle2D.Double(18, 18, 764, 564);
-	public static double WALL_STICK = 160;
-
+	// stats about the dangerous and safe parts of the waves
+	private static int dangerZoneCount = 47;
+	private static double dangerZones[] = new double[dangerZoneCount];
+	
+	// waves we know about
+	private ArrayList<Wave> waves;
+	// information about the enemy
+	private double enemyX, enemyY;
+	private int enemyOrientation;
+	private double enemyAbsoluteBearing;
+	
+	private int enemyOrientation1, enemyOrientation2;
+	private double enemyAbsoluteBearing1, enemyAbsoluteBearing2;
+	
 	public void init(WallE bot)
 	{
 		owner = bot;
-		enemyWaves = new ArrayList<EnemyWave>();
-		surfDirections = new ArrayList<Integer>();
-		surfAbsoluteBearings = new ArrayList<Double>();
+		waves = new ArrayList<Wave>();
 	}
-
-	public void onHitByBullet(HitByBulletEvent e)
+	
+	private Wave surfTarget ()
 	{
-		// If the enemyWaves collection is empty, we must have missed the
-		// detection of this wave somehow.
-		if (!enemyWaves.isEmpty())
+		double minimumDistance = Double.POSITIVE_INFINITY;
+		Wave target = null;
+		
+		for (Wave wave : waves)
 		{
-			Point2D.Double hitBulletLocation = new Point2D.Double(
-			    e.getBullet().getX(), e.getBullet().getY());
-			EnemyWave hitWave = null;
-
-			// look through the EnemyWaves, and find one that could've hit us.
-			for (int x = 0; x < enemyWaves.size(); x++)
+			double distanceToSource = Point2D.Double.distance(owner.getX(), owner.getY(), wave.fireX, wave.fireY);
+			double distance = distanceToSource - wave.distanceTravelled;
+			if (distance <= wave.speed) // if it's going to pass us before we move, ignore it
+				continue;
+			if (distance < minimumDistance)
 			{
-				EnemyWave ew = (EnemyWave)enemyWaves.get(x);
-
-				if (Math.abs(ew.distanceTraveled -
-				             selfLocation.distance(ew.fireLocation)) < 50
-				    && Math.round(bulletVelocity(e.getBullet().getPower()) * 10)
-				    == Math.round(ew.bulletVelocity * 10))
-				{
-					hitWave = ew;
-					break;
-				}
-			}
-
-			if (hitWave != null)
-			{
-				logHit(hitWave, hitBulletLocation);
-
-				// We can remove this wave now, of course.
-				enemyWaves.remove(enemyWaves.lastIndexOf(hitWave));
+				target = wave;
+				minimumDistance = distance;
 			}
 		}
+		
+		return target;
 	}
-
-	public Point2D.Double predictPosition(EnemyWave surfWave, int direction)
+	
+	public static double wallSmooth ( WallE bot, double x, double y, double angle, int orientation )
 	{
-		Point2D.Double predictedPosition = (Point2D.Double)selfLocation.clone();
-		double predictedVelocity = owner.getVelocity();
-		double predictedHeading = owner.getHeadingRadians();
-		double maxTurning, moveAngle, moveDir;
-
-		int counter = 0; // number of ticks in the future
-		boolean intercepted = false;
-
-		do
-		{ // the rest of these code comments are rozu's
-			moveAngle =
-			    wallSmoothing(predictedPosition, absoluteBearing(surfWave.fireLocation,
-			                                                     predictedPosition) + (direction * (Math.PI/2)), direction)
-			    - predictedHeading;
-			moveDir = 1;
-
-			if(Math.cos(moveAngle) < 0)
-			{
-				moveAngle += Math.PI;
-				moveDir = -1;
-			}
-
-			moveAngle = Utils.normalRelativeAngle(moveAngle);
-
-			// maxTurning is built in like this, you can't turn more then this in one tick
-			maxTurning = Math.PI/720d*(40d - 3d*Math.abs(predictedVelocity));
-			predictedHeading = Utils.normalRelativeAngle(predictedHeading
-			                                             + limit(-maxTurning, moveAngle, maxTurning));
-
-			// this one is nice ;). if predictedVelocity and moveDir have
-			// different signs you want to breack down
-			// otherwise you want to accelerate (look at the factor "2")
-			predictedVelocity +=
-			    (predictedVelocity * moveDir < 0 ? 2*moveDir : moveDir);
-			predictedVelocity = limit(-8, predictedVelocity, 8);
-
-			// calculate the new predicted position
-			predictedPosition = project(predictedPosition, predictedHeading,
-			                            predictedVelocity);
-
-			counter++;
-
-			if (predictedPosition.distance(surfWave.fireLocation) <
-			    surfWave.distanceTraveled + (counter * surfWave.bulletVelocity)
-			    + surfWave.bulletVelocity)
-			{
-				intercepted = true;
-			}
-		} while(!intercepted && counter < 500);
-
-		return predictedPosition;
-	}
-
-	public double checkDanger(EnemyWave surfWave, int direction)
-	{
-		int index = getFactorIndex(surfWave,
-		                           predictPosition(surfWave, direction));
-
-		return surfStats[index];
-	}
-
-	public void doSurfing()
-	{
-		EnemyWave surfWave = getClosestSurfableWave();
-
-		if (surfWave == null)
-		{ return; }
-
-		double dangerLeft = checkDanger(surfWave, -1);
-		double dangerRight = checkDanger(surfWave, 1);
-
-		double goAngle = absoluteBearing(surfWave.fireLocation, selfLocation);
-		if (dangerLeft < dangerRight)
+		// a very clever bit of code: if we're about to hit the wall, round off so we miss it
+		double projectedX, projectedY;
+		double width = bot.getBattleFieldWidth();
+		double height = bot.getBattleFieldHeight();
+		while (true)
 		{
-			goAngle = wallSmoothing(selfLocation, goAngle - (Math.PI/2), -1);
-		} else
-		{
-			goAngle = wallSmoothing(selfLocation, goAngle + (Math.PI/2), 1);
-		}
-
-		setBackAsFront(owner, goAngle);
-	}
-
-	public void onHitWall(HitWallEvent e)
-	{
-	}
-
-	public void onHitRobot(HitRobotEvent e)
-	{
-	}
-
-	public void updateWaves()
-	{
-		for (int x = 0; x < enemyWaves.size(); x++)
-		{
-			EnemyWave ew = (EnemyWave)enemyWaves.get(x);
-
-			ew.distanceTraveled = (owner.getTime() - ew.fireTime) * ew.bulletVelocity;
-			if (ew.distanceTraveled >
-			    selfLocation.distance(ew.fireLocation) + 50)
-			{
-				enemyWaves.remove(x);
-				x--;
-			}
-		}
-	}
-
-	public EnemyWave getClosestSurfableWave()
-	{
-		double closestDistance = 50000; // I juse use some very big number here
-		EnemyWave surfWave = null;
-
-		for (int x = 0; x < enemyWaves.size(); x++)
-		{
-			EnemyWave ew = (EnemyWave)enemyWaves.get(x);
-			double distance = selfLocation.distance(ew.fireLocation)
-			                  - ew.distanceTraveled;
-
-			if (distance > ew.bulletVelocity && distance < closestDistance)
-			{
-				surfWave = ew;
-				closestDistance = distance;
-			}
-		}
-
-		return surfWave;
-	}
-
-	// Given the EnemyWave that the bullet was on, and the point where we
-	// were hit, calculate the index into our stat array for that factor.
-	public static int getFactorIndex(EnemyWave ew, Point2D.Double targetLocation)
-	{
-		double offsetAngle = (absoluteBearing(ew.fireLocation, targetLocation)
-		                      - ew.directAngle);
-		double factor = Utils.normalRelativeAngle(offsetAngle)
-		                / maxEscapeAngle(ew.bulletVelocity) * ew.direction;
-
-		return (int)limit(0,
-		                  (factor * ((BINS - 1) / 2)) + ((BINS - 1) / 2),
-		                  BINS - 1);
-	}
-
-	// Given the EnemyWave that the bullet was on, and the point where we
-	// were hit, update our stat array to reflect the danger in that area.
-	public void logHit(EnemyWave ew, Point2D.Double targetLocation)
-	{
-		int index = getFactorIndex(ew, targetLocation);
-
-		for (int x = 0; x < BINS; x++)
-		{
-			// for the spot bin that we were hit on, add 1;
-			// for the bins next to it, add 1 / 2;
-			// the next one, add 1 / 5; and so on...
-			surfStats[x] += 1.0 / (Math.pow(index - x, 2) + 1);
-		}
-	}
-
-	public void update ()
-	{
-		updateWaves();
-		doSurfing();
-	}
-
-	public void enemyPosition (ScannedRobotEvent e, double x, double y)
-	{
-		enemyLocation = new Point2D.Double(x, y);
-
-		selfLocation = new Point2D.Double(owner.getX(), owner.getY());
-
-		double lateralVelocity = owner.getVelocity()*Math.sin(e.getBearingRadians());
-		double absBearing = e.getBearingRadians() + owner.getHeadingRadians();
-
-		surfDirections.add(0,
-		                   new Integer((lateralVelocity >= 0) ? 1 : -1));
-		surfAbsoluteBearings.add(0, new Double(absBearing + Math.PI));
-	}
-
-	public void detectedShot (ScannedRobotEvent e, double shotPower)
-	{
-		EnemyWave ew = new EnemyWave();
-		ew.fireTime = owner.getTime() - 1;
-		ew.bulletVelocity = bulletVelocity(shotPower);
-		ew.distanceTraveled = bulletVelocity(shotPower);
-		ew.direction = ((Integer)surfDirections.get(2)).intValue();
-		ew.directAngle = ((Double)surfAbsoluteBearings.get(2)).doubleValue();
-		ew.fireLocation = (Point2D.Double)enemyLocation.clone();
-
-		enemyWaves.add(ew);
-	}
-
-	class EnemyWave
-	{
-		Point2D.Double fireLocation;
-		long fireTime;
-		double bulletVelocity, directAngle, distanceTraveled;
-		int direction;
-
-		public EnemyWave()
-		{
-		}
-	}
-
-	public static double wallSmoothing(Point2D.Double botLocation, double angle, int orientation)
-	{
-		while (!_fieldRect.contains(project(botLocation, angle, WALL_STICK)))
-		{
+			projectedX = x + Math.sin(angle) * 160.0;
+			projectedY = y + Math.cos(angle) * 160.0;
 			angle += orientation*0.05;
+			if (!((projectedX < 18.0) || (projectedY < 18.0) || (projectedX > (width - 18.0)) || (projectedY > (height - 18.0))))
+				break;
 		}
 		return angle;
 	}
-
-	public static Point2D.Double project(Point2D.Double sourceLocation,
-	                                     double angle, double length)
+	
+	public void onHitWall(HitWallEvent e)
 	{
-		return new Point2D.Double(sourceLocation.x + Math.sin(angle) * length,
-		                          sourceLocation.y + Math.cos(angle) * length);
 	}
-
-	public static double absoluteBearing(Point2D.Double source, Point2D.Double target)
+	
+	public void onHitRobot(HitRobotEvent e)
 	{
-		return Math.atan2(target.x - source.x, target.y - source.y);
 	}
-
-	public static double limit(double min, double value, double max)
+	
+	public void update ()
 	{
-		return Math.max(min, Math.min(value, max));
-	}
-
-	public static double bulletVelocity(double power)
-	{
-		return (20.0 - (3.0*power));
-	}
-
-	public static double maxEscapeAngle(double velocity)
-	{
-		return Math.asin(8.0/velocity);
-	}
-
-	public static void setBackAsFront(AdvancedRobot robot, double goAngle)
-	{
-		double angle =
-		    Utils.normalRelativeAngle(goAngle - robot.getHeadingRadians());
-		if (Math.abs(angle) > (Math.PI/2))
+		// update all waves
+		for (int i = 0; i < waves.size(); i++)
 		{
-			if (angle < 0)
+			Wave wave = waves.get(i);
+			// bump the travel distance
+			wave.distanceTravelled = (owner.getTime() - wave.fireTime) * wave.speed;
+			double distanceToSource = Point2D.Double.distance(owner.getX(), owner.getY(), wave.fireX, wave.fireY);
+			if (wave.distanceTravelled > (distanceToSource + 40))
 			{
-				robot.setTurnRightRadians(Math.PI + angle);
-			} else
-			{
-				robot.setTurnLeftRadians(Math.PI - angle);
+				// no longer a problem
+				waves.remove(i);
+				i--;
 			}
-			robot.setBack(100);
-		} else
+		}
+		// find nearest and surf it
+		Wave target = surfTarget();
+		if (target == null) // no waves yet, I guess?
 		{
-			if (angle < 0)
+			// ONWARD
+			//owner.setAhead(Double.POSITIVE_INFINITY);
+			return;
+		}
+		
+		// pick a direction to surf
+		int direction;
+		if (target.dangerLevel(owner, -1) < target.dangerLevel(owner, 1))
+			direction = -1;
+		else
+			direction = 1;
+		
+		double angle = Math.atan2(owner.getX() - target.fireX, owner.getY() - target.fireY);
+		angle = wallSmooth(owner, owner.getX(), owner.getY(), angle + direction*(Math.PI*0.5), direction);
+
+		move(angle);
+	}
+	
+	public void move(double angle)
+	{
+		// head to the angle, using whichever is faster of forward or reverse
+		angle = Utils.normalRelativeAngle(angle - owner.getHeadingRadians());
+		if (Math.abs(angle) > Math.PI*0.5)
+		{
+			owner.setTurnLeftRadians(angle);
+			owner.setBack(Double.POSITIVE_INFINITY);
+		}
+		else
+		{
+			owner.setTurnRightRadians(angle);
+			owner.setAhead(Double.POSITIVE_INFINITY);
+		}
+	}
+	
+	public void onHitByBullet(HitByBulletEvent e)
+	{
+		// if we know of no waves, ignore it
+		if (waves.isEmpty())
+			return;
+		double hitX = e.getBullet().getX();
+		double hitY = e.getBullet().getY();
+		
+		Wave targetWave = null;
+		
+		// look through the waves to determine which one it was
+		for (Wave wave : waves)
+		{
+			double distanceToSource = Point2D.Double.distance(owner.getX(), owner.getY(), wave.fireX, wave.fireY);
+			if (Math.abs(distanceToSource - wave.distanceTravelled) < 40)
 			{
-				robot.setTurnLeftRadians(-1*angle);
-			} else
-			{
-				robot.setTurnRightRadians(angle);
+				// the shoe seems to fit: it's come the right distance.
+				// now, check if the speeds match
+				if (Math.abs(Targetting.bulletSpeed(e.getBullet().getPower()) - wave.speed) < 0.5)
+				{
+					targetWave = wave;
+					break;
+					// this was it: mark where it hit as dangerous and kill the wave
+				}
 			}
-			robot.setAhead(100);
+		}
+		if (targetWave != null)
+		{
+			int epicentre = targetWave.getZone(hitX, hitY);
+			for (int i = 0; i < dangerZoneCount; i++)
+			{
+				// formula from the tutorial, thanks!
+				dangerZones[i] += 1.0 / (Math.pow(epicentre - i, 2) + 1);
+			}
+			waves.remove(waves.indexOf(targetWave));
+		}
+	}
+	
+	public void enemyPosition(ScannedRobotEvent e, double x, double y)
+	{
+		enemyX = x;
+		enemyY = y;
+		enemyAbsoluteBearing = enemyAbsoluteBearing1;
+		enemyAbsoluteBearing1 = enemyAbsoluteBearing2;
+		enemyAbsoluteBearing2 = e.getBearingRadians() + owner.getHeadingRadians();
+		double lateralSpeed = owner.getVelocity() * Math.sin(e.getBearingRadians());
+		enemyOrientation = enemyOrientation1;
+		enemyOrientation1 = enemyOrientation2;
+		enemyOrientation2 = lateralSpeed > 0 ? 1 : -1;
+	}
+	
+	public void detectedShot(ScannedRobotEvent e, double shotPower)
+	{
+		Wave wave = new Wave();
+		// we detected it this frame, therefore it was fired LAST frame
+		wave.fireTime = owner.getTime() - 1;
+		wave.speed = Targetting.bulletSpeed(shotPower);
+		wave.distanceTravelled = wave.speed; // it's travelled one frame
+		wave.orientation = enemyOrientation;
+		wave.angle = enemyAbsoluteBearing;
+		wave.fireX = enemyX;
+		wave.fireY = enemyY;
+		waves.add(wave);
+	}
+	
+	private class Wave
+	{
+		public double fireX, fireY;
+		public long fireTime;
+		public double speed, angle, distanceTravelled;
+		public int orientation;
+		
+		public int getZone ( double x, double y )
+		{
+			// get the danger zone associated with a hit in a given place
+			double angleOffset = Math.atan2(x - fireX, y - fireY) - angle;
+			double factor = Utils.normalRelativeAngle(angleOffset) /
+			                Math.asin(8.0/speed) * orientation; // the asin is the maximum escape angle
+			int zone = (int)((factor * ((dangerZoneCount - 1) / 2)) + ((dangerZoneCount - 1) / 2));
+			if (zone >= dangerZoneCount) zone = dangerZoneCount - 1;
+			if (zone < 0) zone = 0;
+			return zone;
+		}
+		
+		public double dangerLevel ( WallE bot, int orientation )
+		{
+			double predictedX = bot.getX(), predictedY = bot.getY();
+			double predictedSpeed = bot.getVelocity();
+			double predictedHeading = bot.getHeadingRadians();
+			
+			double dt;
+			for (dt = 0.0; dt < 500.0; dt += 1.0)
+			{
+				double moveAngle = WaveSurfMovement.wallSmooth(bot, predictedX, predictedY, Math.atan2(predictedX - fireX, predictedY - fireY) + (orientation * Math.PI*0.5), orientation) - predictedHeading;
+				double moveDirection = 1;
+				
+				// catch the case where we have to back out
+				if (Math.cos(moveAngle) < 0.0)
+				{
+					moveAngle += Math.PI;
+					moveDirection = -1;
+				}
+				
+				moveAngle = Utils.normalRelativeAngle(moveAngle);
+				
+				// a formula shamelessly lifted
+				double maxTurn = Math.PI/720.0*(40.0 - 3.0*Math.abs(predictedSpeed));
+				if (moveAngle > maxTurn)
+					moveAngle = maxTurn;
+				else if (moveAngle < -maxTurn)
+					moveAngle = -maxTurn;
+				predictedHeading = Utils.normalRelativeAngle(predictedHeading + moveAngle);
+				predictedSpeed += ((predictedSpeed * moveDirection)<0.0) ? (2.0*moveDirection) : moveDirection;
+				
+				if (predictedSpeed > 8.0)
+					predictedSpeed = 8.0;
+				if (predictedSpeed < -8.0)
+					predictedSpeed = -8.0;
+				
+				predictedX += Math.sin(predictedHeading)*predictedSpeed;
+				predictedY += Math.cos(predictedHeading)*predictedSpeed;
+
+				// intercept condition: we've caught the wave!
+				if (Point2D.Double.distance(predictedX, predictedY, fireX, fireY) <
+				    distanceTravelled + (dt * speed) + dt)
+				{
+					break;
+				}
+			}
+			
+			return dangerZones[getZone(predictedX, predictedY)];
 		}
 	}
 }
