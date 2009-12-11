@@ -54,9 +54,6 @@ public class WallE extends AdvancedRobot
 		movementStrategy = new AntiGravityMovement();
 		movementStrategy.init(this);
 		
-		targettingStrategy = new NaiveTargetting();
-		targettingStrategy.init(this);
-		
 		setAdjustGunForRobotTurn(true);
 		gunRotation = defaultGunRotationSpeed;
 		
@@ -64,7 +61,8 @@ public class WallE extends AdvancedRobot
 		{
 			movementStrategy.update();
 			// turn gun by the turn amount
-			targettingStrategy.update();
+			if (isTracking)
+				targettingStrategy.update();
 			if (didSeeEnemy)
 				didSeeEnemy = false;
 			else
@@ -120,6 +118,23 @@ public class WallE extends AdvancedRobot
 		{
 			isTracking = true;
 			expectedEnemyEnergy = e.getEnergy();
+			if (e.getName().contains("Stordy"))
+			{
+				// switch to naive targetting
+				targettingStrategy = new NaiveTargetting();
+				targettingStrategy.init(this);
+			}
+			else if (e.getName().contains("Wall"))
+			{
+				targettingStrategy = new LinearTargetting();
+				targettingStrategy.init(this);
+			}
+			else
+			{
+				// switch to circular targetting
+				targettingStrategy = new CircularTargetting();
+				targettingStrategy.init(this);
+			}
 		}
 		// if we do, check the energy to see if a shot has been fired
 		else
