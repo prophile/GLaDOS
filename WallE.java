@@ -54,7 +54,7 @@ public class WallE extends AdvancedRobot
 		movementStrategy = new AntiGravityMovement();
 		movementStrategy.init(this);
 		
-		targettingStrategy = new CircularTargetting();
+		targettingStrategy = new NaiveTargetting();
 		targettingStrategy.init(this);
 		
 		setAdjustGunForRobotTurn(true);
