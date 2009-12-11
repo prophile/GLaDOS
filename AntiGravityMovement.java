@@ -16,6 +16,7 @@ public class AntiGravityMovement extends Movement
 	double randomForceX4, randomForceY4;
 	int enemyPresenceIndicator = 0;
 	boolean isReversing = false;
+	int reverseCount = 0;
 	
 	public void init(WallE bot)
 	{
@@ -67,6 +68,22 @@ public class AntiGravityMovement extends Movement
 		return oppositeY;
 	}
 	
+	private static double pointForceLinearX ( double x, double y, double influenceFactor )
+	{
+		double oppositeX = x;
+		double influence = influenceFactor / (x*x + y*y);
+		oppositeX *= influence;
+		return oppositeX;
+	}
+	
+	private static double pointForceLinearY ( double x, double y, double influenceFactor )
+	{
+		double oppositeY = y;
+		double influence = influenceFactor / (x*x + y*y);
+		oppositeY *= influence;
+		return oppositeY;
+	}
+	
 	public void update ()
 	{
 		double x = owner.getX();
@@ -84,12 +101,12 @@ public class AntiGravityMovement extends Movement
 		enemyPresenceIndicator--;
 		if (enemyPresenceIndicator > 0)
 		{
-		  forceX += pointForceX(enemyX - x, enemyY - y, -300.0);
-		  forceY += pointForceY(enemyX - x, enemyY - y, -300.0);
+		  forceX += pointForceLinearX(enemyX - x, enemyY - y, 300.0);
+		  forceY += pointForceLinearY(enemyX - x, enemyY - y, 300.0);
 		}
 		
-		if (owner.randomNumberGenerator().nextInt(40) == 4)
-			isReversing = !isReversing;
+		/*if (owner.randomNumberGenerator().nextInt(40) == 4)
+			isReversing = !isReversing;*/
 		
 		// random point force
 		forceX += pointForceX(randomForceX1 - x, randomForceY1 - y, 50.0);
@@ -131,6 +148,8 @@ public class AntiGravityMovement extends Movement
 	public void detectedShot (ScannedRobotEvent e, double shotPower)
 	{
 		// if one has, toggle bulletDodgeFreeze
-		isReversing = !isReversing;
+		reverseCount++;
+		if (reverseCount % 2 == 0)
+			isReversing = !isReversing;
 	}
 }
