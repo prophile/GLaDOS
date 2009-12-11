@@ -22,6 +22,7 @@ public class WallE extends AdvancedRobot
 	private int trackingCount;
 	private double gunRotation;
 	private boolean isTracking;
+	private boolean didSeeEnemy = false;
 	
 	// random number generation
 	private Random randomNumberGenerator;
@@ -64,7 +65,10 @@ public class WallE extends AdvancedRobot
 			movementStrategy.update();
 			// turn gun by the turn amount
 			targettingStrategy.update();
-			setTurnGunRightRadians(gunRotation);
+			if (didSeeEnemy)
+				didSeeEnemy = false;
+			else
+				setTurnGunRightRadians(gunRotation);
 			// if tracking, increment trackingCount and:
 			if (isTracking)
 			{
@@ -155,7 +159,9 @@ public class WallE extends AdvancedRobot
 		double radarSwivel = Utils.normalRelativeAngle(enemyAngle - getRadarHeadingRadians());
 		setTurnRadarRightRadians(radarSwivel);
 		// OPEN FIRE
-		fire(bulletPower);
+		if (getGunHeat() < 0.1)
+			setFire(bulletPower);
+		didSeeEnemy = true;
 	}
 	
 	public void onWin(WinEvent e)

@@ -30,6 +30,10 @@ public class WallMovement extends Movement
 		}
 	}
 	
+	public void enemyPosition(double x, double y)
+	{
+	}
+	
 	public void onHitWall(HitWallEvent e)
 	{
 		// do an immediate turn
