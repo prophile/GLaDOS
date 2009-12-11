@@ -48,13 +48,13 @@ public class WallE extends AdvancedRobot
 		setBulletColor(Color.black);
 		setScanColor(Color.white);
 		
-		movementStrategy = new WallMovement();
+		randomNumberGenerator = new Random();
+		
+		movementStrategy = new AntiGravityMovement();
 		movementStrategy.init(this);
 		
 		targettingStrategy = new CircularTargetting();
 		targettingStrategy.init(this);
-		
-		randomNumberGenerator = new Random();
 		
 		setAdjustGunForRobotTurn(true);
 		double defaultGunRotationSpeed = Math.PI / 15.0;
