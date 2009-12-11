@@ -125,8 +125,6 @@ public class AntiGravityMovement extends Movement
 		double angle = Utils.normalAbsoluteAngle(Math.atan2(forceX, forceY));
 		// do rotation
 		double rotation = Utils.normalRelativeAngle(angle - owner.getHeadingRadians());
-		double totalForceMagnitude = (forceX*forceX) + (forceY*forceY);
-		owner.setBodyColor(new Color(0.0f, Math.min(1.0f, (float)totalForceMagnitude * 0.1f), 0.0f));
 		if (isReversing)
 		{
 			rotation = -rotation;

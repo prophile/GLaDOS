@@ -36,8 +36,8 @@ public class WallE extends AdvancedRobot
 	private Targetting targettingStrategy;
 	
 	// strategy selection
-	private static int movementStrategyNumber = 0;
-	private static int targettingStrategyNumber = 0;
+	private static int movementStrategyNumber = 1;
+	private static int targettingStrategyNumber = 1;
 	private static int wins = 0;
 	private static int losses = 0;
 	
@@ -67,8 +67,8 @@ public class WallE extends AdvancedRobot
 			else
 			{
 				// reshuffle
-				//movementStrategyNumber = randomNumberGenerator.nextInt(3);
-				//targettingStrategyNumber = randomNumberGenerator.nextInt(3);
+				movementStrategyNumber = randomNumberGenerator.nextInt(3);
+				targettingStrategyNumber = randomNumberGenerator.nextInt(3);
 				wins = 0;
 				losses = 0;
 			}
