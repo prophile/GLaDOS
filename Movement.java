@@ -12,9 +12,9 @@ abstract public class Movement
 		owner = bot;
 	}
 	
-	abstract void update ();
-	abstract void onHitWall (HitWallEvent e);
-	abstract void onHitRobot (HitRobotEvent e);
-	abstract void onHitByBullet (HitByBulletEvent e);
-	abstract void detectedShot (ScannedRobotEvent e, double shotPower);
+	abstract public void update ();
+	abstract public void onHitWall (HitWallEvent e);
+	abstract public void onHitRobot (HitRobotEvent e);
+	abstract public void onHitByBullet (HitByBulletEvent e);
+	abstract public void detectedShot (ScannedRobotEvent e, double shotPower);
 }

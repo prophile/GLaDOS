@@ -76,7 +76,7 @@ public class WallMovement extends Movement
 			owner.setAhead(Double.POSITIVE_INFINITY);
 	}
 	
-	void detectedShot (ScannedRobotEvent e, double shotPower)
+	public void detectedShot (ScannedRobotEvent e, double shotPower)
 	{
 		// if one has, toggle bulletDodgeFreeze
 		bulletDodgeFreeze = !bulletDodgeFreeze;
