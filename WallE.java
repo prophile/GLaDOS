@@ -178,22 +178,13 @@ public class WallE extends AdvancedRobot
 			// if tracking, increment trackingCount and:
 			if (isTracking)
 			{
-				trackingCount++;
-				switch (trackingCount)
-				{
-					case 3:
-						gunRotation = -gunRotation;
-					case 6:
-						gunRotation = -gunRotation;
-						break;
-					case 12: // give up the hunt
-						isTracking = false;
-						break;
-				}
+				if (++trackingCount == 12)
+					isTracking = false;
 			}
 			else
 			{
 				gunRotation = Double.POSITIVE_INFINITY;
+				//setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
 			}
 			// call execute
 			execute();
@@ -279,7 +270,7 @@ public class WallE extends AdvancedRobot
 		double radarSwivel = Utils.normalRelativeAngle(enemyAngle - getRadarHeadingRadians());
 		setTurnRadarRightRadians(1.9*radarSwivel);
 		// OPEN FIRE
-		if (getGunHeat() < 0.1)
+		if (getGunHeat() < 0.1 && !(getEnergy() < 50.0 && e.getDistance() > 500.0))
 			setFire(bulletPower);
 		didSeeEnemy = true;
 	}
