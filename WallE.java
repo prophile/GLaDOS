@@ -123,7 +123,7 @@ public class WallE extends AdvancedRobot
 	{
 		// set the colours
 		setBodyColor(Color.black);
-		setGunColor(Color.yellow);
+		setGunColor(Color.blue);
 		setRadarColor(Color.black);
 		setBulletColor(Color.black);
 		setScanColor(Color.white);
@@ -191,10 +191,12 @@ public class WallE extends AdvancedRobot
 			// set up the colour scheme
 			if (getEnergy() < 30.0)
 				setGunColor(Color.red);
-			else if (expectedEnemyEnergy < 30.0)
+			else if (isTracking && expectedEnemyEnergy < 30.0)
 				setGunColor(Color.green);
-			else
+			else if (isTracking)
 				setGunColor(Color.yellow);
+			else
+				setGunColor(Color.blue);
 		}
 	}
 	
