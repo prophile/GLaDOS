@@ -37,7 +37,7 @@ public class WallE extends AdvancedRobot
 	
 	// strategy selection
 	private static int movementStrategyNumber = 1;
-	private static int targettingStrategyNumber = 1;
+	private static int targettingStrategyNumber = 0;
 	private static int wins = 0;
 	private static int losses = 0;
 	
@@ -166,6 +166,8 @@ public class WallE extends AdvancedRobot
 		{
 			isTracking = true;
 			expectedEnemyEnergy = e.getEnergy();
+			if (e.getName().contains("Stordy"))
+				targettingStrategyNumber = 1;
 		}
 		// if we do, check the energy to see if a shot has been fired
 		else
