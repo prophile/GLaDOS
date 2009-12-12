@@ -15,6 +15,8 @@ import robocode.util.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.Random;
+import java.io.File;
+import java.io.FileInputStream;
 
 public class WallE extends AdvancedRobot
 {
@@ -23,6 +25,7 @@ public class WallE extends AdvancedRobot
 	private double gunRotation;
 	private boolean isTracking;
 	private boolean didSeeEnemy = false;
+	private static String enemyName = null;
 	
 	// random number generation
 	private Random randomNumberGenerator;
@@ -40,6 +43,40 @@ public class WallE extends AdvancedRobot
 	private static int targettingStrategyNumber = 0;
 	private static int wins = 0;
 	private static int losses = 0;
+	private static boolean isIdeal = false;
+	
+	private boolean loadIdeal()
+	{
+		File dataFile = getDataFile(enemyName + ".nemesis");
+		try
+		{
+			FileInputStream inputStream = new FileInputStream(dataFile);
+			movementStrategyNumber = inputStream.read() - 'A';
+			targettingStrategyNumber = inputStream.read() - 'A';
+			inputStream.close();
+			return true;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
+	
+	private void storeIdeal()
+	{
+		File dataFile = getDataFile(enemyName + ".nemesis");
+		try
+		{
+			RobocodeFileOutputStream outputStream = new RobocodeFileOutputStream(dataFile);
+			outputStream.write(movementStrategyNumber + 'A');
+			outputStream.write(targettingStrategyNumber + 'A');
+			outputStream.close();
+		}
+		catch (Exception e)
+		{
+			// do nothing, it doesn't matter
+		}
+	}
 	
 	public Random randomNumberGenerator ()
 	{
@@ -55,22 +92,44 @@ public class WallE extends AdvancedRobot
 		setBulletColor(Color.black);
 		setScanColor(Color.white);
 		
-		randomNumberGenerator = new Random();
-		if (wins + losses > 8)
+		if (getOthers() > 1 && enemyName == null)
 		{
-			if (wins >= 5)
+			// this is a melee
+			enemyName = "melee";
+		}
+		
+		randomNumberGenerator = new Random();
+		if (wins + losses >= 4 && !isIdeal)
+		{
+			switch (wins)
 			{
-				// stick with this strategy
-				wins = 0;
-				losses = -2;
-			}
-			else
-			{
-				// reshuffle
-				movementStrategyNumber = randomNumberGenerator.nextInt(3);
-				targettingStrategyNumber = randomNumberGenerator.nextInt(3);
-				wins = 0;
-				losses = 0;
+				case 0:
+				case 1:
+				case 2: // not doing so well
+					// reshuffle
+					movementStrategyNumber = randomNumberGenerator.nextInt(3);
+					targettingStrategyNumber = randomNumberGenerator.nextInt(3);
+					wins = 0;
+					losses = 0;
+					break;
+				case 3: // this isn't bad at all
+					wins = 0;
+					losses = -1; // slight bias
+					break; // stick with it, see what happens
+				case 4: // looks like we have our ideal choice
+					if (!enemyName.equals("melee")) // if it's a melee, don't bother to log
+					{
+						isIdeal = true;
+						// log it
+						storeIdeal();
+					}
+					else
+					{
+						// it's a melee, just reset the counter
+						wins = 0;
+						losses = -2; // bias
+					}
+					break;
 			}
 		}
 		
@@ -166,8 +225,12 @@ public class WallE extends AdvancedRobot
 		{
 			isTracking = true;
 			expectedEnemyEnergy = e.getEnergy();
-			if (e.getName().contains("Stordy"))
-				targettingStrategyNumber = 1;
+			if (enemyName == null)
+			{
+				enemyName = e.getName();
+				// try to load ideal strategies
+				isIdeal = loadIdeal();
+			}
 		}
 		// if we do, check the energy to see if a shot has been fired
 		else
