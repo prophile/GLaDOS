@@ -39,11 +39,11 @@ public class WallE extends AdvancedRobot
 	private Targetting targettingStrategy;
 	
 	// strategy selection
-	private static int movementStrategyNumber = 1;
-	private static int targettingStrategyNumber = 0;
-	private static int wins = 0;
-	private static int losses = 0;
-	private static boolean isIdeal = false;
+	private static int strategyNumber = 3;
+	private static int games[];
+	private static double energyAtEnd[];
+	// change this to true to enable learning
+	private static boolean isLearning = true;
 	
 	private boolean loadIdeal()
 	{
@@ -51,9 +51,11 @@ public class WallE extends AdvancedRobot
 		try
 		{
 			FileInputStream inputStream = new FileInputStream(dataFile);
-			movementStrategyNumber = inputStream.read() - 'A';
-			targettingStrategyNumber = inputStream.read() - 'A';
+			int movementStrategyNumber = inputStream.read() - 'A';
+			int targettingStrategyNumber = inputStream.read() - 'A';
+			strategyNumber = movementStrategyNumber*3 + targettingStrategyNumber;
 			inputStream.close();
+			isLearning = false;
 			return true;
 		}
 		catch (Exception e)
@@ -62,14 +64,14 @@ public class WallE extends AdvancedRobot
 		}
 	}
 	
-	private void storeIdeal()
+	private void storeIdeal(int strategy)
 	{
 		File dataFile = getDataFile(enemyName + ".nemesis");
 		try
 		{
 			RobocodeFileOutputStream outputStream = new RobocodeFileOutputStream(dataFile);
-			outputStream.write(movementStrategyNumber + 'A');
-			outputStream.write(targettingStrategyNumber + 'A');
+			outputStream.write((strategy / 3) + 'A');
+			outputStream.write((strategy % 3) + 'A');
 			outputStream.close();
 		}
 		catch (Exception e)
@@ -78,60 +80,10 @@ public class WallE extends AdvancedRobot
 		}
 	}
 	
-	public Random randomNumberGenerator ()
+	private void setupStrategies ()
 	{
-		return randomNumberGenerator;
-	}
-	
-	public void run ()
-	{
-		// set the colours
-		setBodyColor(Color.black);
-		setGunColor(Color.yellow);
-		setRadarColor(Color.black);
-		setBulletColor(Color.black);
-		setScanColor(Color.white);
-		
-		if (getOthers() > 1 && enemyName == null)
-		{
-			// this is a melee
-			enemyName = "melee";
-		}
-		
-		randomNumberGenerator = new Random();
-		if (wins + losses >= 4 && !isIdeal)
-		{
-			switch (wins)
-			{
-				case 0:
-				case 1:
-				case 2: // not doing so well
-					// reshuffle
-					movementStrategyNumber = randomNumberGenerator.nextInt(3);
-					targettingStrategyNumber = randomNumberGenerator.nextInt(3);
-					wins = 0;
-					losses = 0;
-					break;
-				case 3: // this isn't bad at all
-					wins = 0;
-					losses = -1; // slight bias
-					break; // stick with it, see what happens
-				case 4: // looks like we have our ideal choice
-					if (!enemyName.equals("melee")) // if it's a melee, don't bother to log
-					{
-						isIdeal = true;
-						// log it
-						storeIdeal();
-					}
-					else
-					{
-						// it's a melee, just reset the counter
-						wins = 0;
-						losses = -2; // bias
-					}
-					break;
-			}
-		}
+		int movementStrategyNumber = strategyNumber / 3;
+		int targettingStrategyNumber = strategyNumber % 3;
 		
 		switch (movementStrategyNumber)
 		{
@@ -160,9 +112,58 @@ public class WallE extends AdvancedRobot
 			break;
 		}
 		targettingStrategy.init(this);
+	}
+	
+	public Random randomNumberGenerator ()
+	{
+		return randomNumberGenerator;
+	}
+	
+	public void run ()
+	{
+		// set the colours
+		setBodyColor(Color.black);
+		setGunColor(Color.yellow);
+		setRadarColor(Color.black);
+		setBulletColor(Color.black);
+		setScanColor(Color.white);
+		
+		randomNumberGenerator = new Random();
+		
+		if (isLearning)
+		{
+			strategyNumber = randomNumberGenerator.nextInt(9);
+		}
+		
+		if (getOthers() > 1)
+		{
+			// this is a melee
+			enemyName = "melee";
+			isLearning = false;
+			strategyNumber = 6 + randomNumberGenerator.nextInt(3);
+		}
+		else if (enemyName == null)
+		{
+			if (isLearning)
+			{
+				games = new int[9];
+				energyAtEnd = new double[9];
+				for (int i = 0; i < 9; i++)
+				{
+					games[i] = 0;
+					energyAtEnd[i] = 0.0;
+				}
+			}
+		}
+		if (isLearning)
+		{
+			games[strategyNumber]++;
+		}
 		
 		setAdjustGunForRobotTurn(true);
 		gunRotation = defaultGunRotationSpeed;
+		
+		setupStrategies();
 		
 		while (true)
 		{
@@ -229,7 +230,8 @@ public class WallE extends AdvancedRobot
 			{
 				enemyName = e.getName();
 				// try to load ideal strategies
-				isIdeal = loadIdeal();
+				if (loadIdeal())
+					setupStrategies();
 			}
 		}
 		// if we do, check the energy to see if a shot has been fired
@@ -286,18 +288,13 @@ public class WallE extends AdvancedRobot
 	{
 		setAhead(0);
 		// do a little victory dance
-		wins++;
+		energyAtEnd[strategyNumber] += getEnergy();
 		while (true)
 		{
 			setTurnRightRadians(Double.POSITIVE_INFINITY);
 			setTurnGunLeftRadians(Double.POSITIVE_INFINITY);
 			execute();
 		}
-	}
-	
-	public void onDeath(DeathEvent e)
-	{
-		losses++;
 	}
 	
 	public void onHitByBullet(HitByBulletEvent event)
@@ -311,5 +308,30 @@ public class WallE extends AdvancedRobot
 	{
 		// we hit the opponent, so we now have a new guess as to their energy
 		expectedEnemyEnergy = e.getEnergy();
+	}
+	
+	public void onBattleEnded(BattleEndedEvent event)
+	{
+		if (isLearning)
+		{
+			// select the strategy with the fewest losses
+			double mostEnergy = 0.0;
+			int bestStrategy = -1;
+			for (int i = 0; i < 9; i++)
+			{
+				if (games[i] == 0)
+					continue;
+				double energy = energyAtEnd[i] / (double)games[i];
+				if (energy > mostEnergy)
+				{
+					mostEnergy = energy;
+					bestStrategy = i;
+				}
+			}
+			if (bestStrategy != -1)
+			{
+				storeIdeal(bestStrategy);
+			}
+		}
 	}
 }
