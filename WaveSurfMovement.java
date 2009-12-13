@@ -29,6 +29,16 @@ public class WaveSurfMovement extends Movement
 		waves = new ArrayList<Wave>();
 	}
 	
+	public void onPaint(Graphics2D graphics)
+	{
+		for (Wave wave : waves)
+		{
+			graphics.setColor(Color.red);
+			double radius = wave.distanceTravelled;
+			graphics.draw(new Ellipse2D.Double(wave.fireX - radius, wave.fireY - radius, radius * 2.0, radius * 2.0));
+		}
+	}
+	
 	private Wave surfTarget ()
 	{
 		double minimumDistance = Double.POSITIVE_INFINITY;
