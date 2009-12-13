@@ -99,18 +99,19 @@ public class WallE extends AdvancedRobot
 		}
 		movementStrategy.init(this);
 		
-		switch (targettingStrategyNumber)
-		{
-		case 0:
-			targettingStrategy = new CircularTargetting();
-			break;
-		case 1:
-			targettingStrategy = new NaiveTargetting();
-			break;
-		case 2:
-			targettingStrategy = new LinearTargetting();
-			break;
-		}
+		//switch (targettingStrategyNumber)
+		//{
+		//case 0:
+		//	targettingStrategy = new CircularTargetting();
+		//	break;
+		//case 1:
+		//	targettingStrategy = new NaiveTargetting();
+		//	break;
+		//case 2:
+		//	targettingStrategy = new LinearTargetting();
+		//	break;
+		//}
+		targettingStrategy = new VirtualGunTargetting();
 		targettingStrategy.init(this);
 	}
 	
@@ -212,6 +213,12 @@ public class WallE extends AdvancedRobot
 		fire(3);
 	}
 	
+	public void onPaint(Graphics2D graphics)
+	{
+		movementStrategy.onPaint(graphics);
+		targettingStrategy.onPaint(graphics);
+	}
+	
 	public void onScannedRobot(ScannedRobotEvent e)
 	{
 		// if we don't have a target, set the target and record energy
@@ -257,6 +264,7 @@ public class WallE extends AdvancedRobot
 		double enemyX = getX() + distance*Math.sin(enemyAngle);
 		double enemyY = getY() + distance*Math.cos(enemyAngle);
 		movementStrategy.enemyPosition(e, enemyX, enemyY);
+		targettingStrategy.enemyPosition(e, enemyX, enemyY);
 		// rotate the gun by the relevant amount
 		double gunSwivel = Utils.normalRelativeAngle(targetAngle - getGunHeadingRadians());
 		setTurnGunRightRadians(gunSwivel);
