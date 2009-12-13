@@ -164,7 +164,7 @@ public class WaveSurfMovement extends Movement
 		enemyAbsoluteBearing = enemyAbsoluteBearing1;
 		enemyAbsoluteBearing1 = enemyAbsoluteBearing2;
 		enemyAbsoluteBearing2 = e.getBearingRadians() + owner.getHeadingRadians();
-		double lateralSpeed = owner.getVelocity() * Math.sin(e.getBearingRadians());
+		double lateralSpeed = e.getVelocity() * Math.sin(e.getHeadingRadians() - enemyAbsoluteBearing2);
 		enemyOrientation = enemyOrientation1;
 		enemyOrientation1 = enemyOrientation2;
 		enemyOrientation2 = lateralSpeed > 0 ? 1 : -1;

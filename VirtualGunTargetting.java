@@ -5,18 +5,25 @@ import robocode.util.*;
 import java.awt.geom.*;
 import java.util.ArrayList;
 import java.awt.*;
+import java.util.List;
 
 public class VirtualGunTargetting extends Targetting
 {
 	static Targetting[] targetters;
-	static int[] successes;
 	static boolean initted = false;
 	static int virtualBulletTick = 0;
-	static private final int numVirtualGuns = 5;
+	static private final int numVirtualGuns = 4;
+	
+	static private KdTree<Integer> targetSelector;
 	
 	double enemyX, enemyY;
 	private ArrayList<VirtualBullet> virtualBullets;
 	long lastEnemyScanTime;
+	
+	static private final int logEntryCount = 4;
+	
+	private double lateralVelocities[];
+	private double advancingVelocities[];
 	
 	public void onPaint(Graphics2D graphics)
 	{
@@ -36,8 +43,6 @@ public class VirtualGunTargetting extends Targetting
 				case 3:
 					graphics.setColor(Color.yellow);
 					break;
-				case 4:
-					graphics.setColor(Color.magenta);
 			}
 			graphics.fill(new Rectangle2D.Double(bullet.x, bullet.y, 4.0, 4.0));
 		}
@@ -49,24 +54,19 @@ public class VirtualGunTargetting extends Targetting
 		if (!initted)
 		{
 			targetters = new Targetting[numVirtualGuns];
-			successes = new int[numVirtualGuns];
-			successes[0] = 0;
-			successes[1] = 0;
-			successes[2] = 0;
-			successes[3] = 0;
-			successes[4] = 0;
 			initted = true;
+			targetSelector = new KdTree.Manhattan<Integer>(10, new Integer(800));
 		}
 		targetters[0] = new CircularTargetting();
 		targetters[1] = new NaiveTargetting();
 		targetters[2] = new LinearTargetting();
-		targetters[3] = new RandomTargetting();
-		targetters[4] = new ReverseCircularTargetting();
+		targetters[3] = new ReverseCircularTargetting();
 		targetters[0].init(bot);
 		targetters[1].init(bot);
 		targetters[2].init(bot);
 		targetters[3].init(bot);
-		targetters[4].init(bot);
+		lateralVelocities = new double[logEntryCount];
+		advancingVelocities = new double[logEntryCount];
 		virtualBullets = new ArrayList<VirtualBullet>();
 	}
 	
@@ -93,16 +93,26 @@ public class VirtualGunTargetting extends Targetting
 				virtualBullets.remove(i);
 				i--;
 			}
-			else if (Point2D.Double.distance(bullet.x, bullet.y, enemyX, enemyY) < 50.0)
+			else if (Point2D.Double.distance(bullet.x, bullet.y, enemyX, enemyY) < 30.0)
 			{
+				// log in kdtree
+				SituationLog log = bullet.log;
+				double[] location = new double[10];
+				for (int j = 0; j < logEntryCount; j++)
+				{
+					location[j] = log.lateralVelocities[j];
+					location[j+logEntryCount] = log.advancingVelocities[j];
+				}
+				location[8] = log.distance;
+				location[9] = log.energy;
+				targetSelector.addPoint(location, new Integer(bullet.targetter));
 				// hit!
-				successes[bullet.targetter]++;
 				virtualBullets.remove(i);
 				i--;
 			}
 		}
-		owner.setDebugProperty("VGWeightings", "circ=" + successes[0] + " naive=" + successes[1] + " linear=" + successes[2] + " random=" + successes[3] + " rcirc=" + successes[4]);
 		owner.setDebugProperty("VGVBCount", "" + virtualBullets.size());
+		owner.setDebugProperty("VGLogSize", "" + targetSelector.size());
 		for (int i = 0; i < numVirtualGuns; i++)
 		{
 			targetters[i].update();
@@ -113,14 +123,23 @@ public class VirtualGunTargetting extends Targetting
 	{
 		// select the targetter with the best record
 		int bestTargetter = 0; // default to the first
-		int mostSuccesses = 0;
-		for (int i = 0; i < numVirtualGuns; i++)
+		double position[] = new double[10];
+		for (int i = 0; i < logEntryCount; i++)
 		{
-			if (successes[i] > mostSuccesses)
-			{
-				mostSuccesses = successes[i];
-				bestTargetter = i;
-			}
+			position[i] = lateralVelocities[(i + virtualBulletTick) % 4];
+			position[i + 4] = advancingVelocities[(i + virtualBulletTick) % 4];
+		}
+		position[8] = e.getDistance();
+		position[9] = e.getEnergy();
+		List<KdTree.Entry<Integer>> entries = targetSelector.nearestNeighbor(position, 1, false);
+		if (!entries.isEmpty() && entries.get(0).distance < 50.0)
+		{
+			owner.setDebugProperty("VGSelection", "" + entries.get(0).value + ", dist=" + entries.get(0).distance);
+			bestTargetter = entries.get(0).value.intValue();
+		}
+		else
+		{
+			owner.setDebugProperty("VGSelection", "" + bestTargetter + " (no closer point)");
 		}
 		return targetters[bestTargetter].target(e, bulletPower);
 	}
@@ -130,8 +149,23 @@ public class VirtualGunTargetting extends Targetting
 		// poll subtargetters for their opinions
 		virtualBulletTick++;
 		lastEnemyScanTime = owner.getTime();
-		if (virtualBulletTick % 4 == 0)
+		double absoluteBearing = e.getBearingRadians() + owner.getHeadingRadians();
+		double lateralSpeed = e.getVelocity() * Math.sin(e.getHeadingRadians() - absoluteBearing);
+		double advancingSpeed = e.getVelocity() * Math.cos(e.getHeadingRadians() - absoluteBearing);
+		lateralVelocities[virtualBulletTick % 4] = lateralSpeed;
+		advancingVelocities[virtualBulletTick % 4] = advancingSpeed;
+		if (virtualBulletTick % 4 == 3)
 		{
+			SituationLog log = new SituationLog();
+			log.lateralVelocities = new double[logEntryCount];
+			log.advancingVelocities = new double[logEntryCount];
+			for (int i = 0; i < logEntryCount; i++)
+			{
+				log.lateralVelocities[i] = lateralVelocities[i];
+				log.advancingVelocities[i] = advancingVelocities[i];
+			}
+			log.distance = e.getDistance();
+			log.energy = e.getEnergy();
 			double bulletPower = e.getDistance() > 500.0 ? 2.0 : 3.0;
 			for (int i = 0; i < numVirtualGuns; i++)
 			{
@@ -143,6 +177,7 @@ public class VirtualGunTargetting extends Targetting
 				bullet.velX = Targetting.bulletSpeed(bulletPower) * Math.sin(angle);
 				bullet.velY = Targetting.bulletSpeed(bulletPower) * Math.cos(angle);
 				bullet.lastUpdateTime = lastEnemyScanTime;
+				bullet.log = log;
 				virtualBullets.add(bullet);
 			}
 		}
@@ -160,5 +195,13 @@ public class VirtualGunTargetting extends Targetting
 		public double velX, velY;
 		public long lastUpdateTime;
 		public int targetter;
+		public SituationLog log;
+	}
+	
+	private class SituationLog
+	{
+		public double distance, energy;
+		public double lateralVelocities[];
+		public double advancingVelocities[];
 	}
 }
