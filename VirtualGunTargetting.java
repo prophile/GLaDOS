@@ -19,22 +19,22 @@ public class VirtualGunTargetting extends Targetting
 	
 	public void onPaint(Graphics2D graphics)
 	{
-		for (VirtualBullet bullet : virtualBullets)
-		{
-			switch (bullet.targetter)
-			{
-			case 0:
-				graphics.setColor(Color.blue);
-				break;
-			case 1:
-				graphics.setColor(Color.red);
-				break;
-			case 2:
-				graphics.setColor(Color.green);
-				break;
-			}
-			graphics.fill(new Rectangle2D.Double(bullet.x, bullet.y, 4.0, 4.0));
-		}
+		//for (VirtualBullet bullet : virtualBullets)
+		//{
+		//	switch (bullet.targetter)
+		//	{
+		//	case 0:
+		//		graphics.setColor(Color.blue);
+		//		break;
+		//	case 1:
+		//		graphics.setColor(Color.red);
+		//		break;
+		//	case 2:
+		//		graphics.setColor(Color.green);
+		//		break;
+		//	}
+		//	graphics.fill(new Rectangle2D.Double(bullet.x, bullet.y, 4.0, 4.0));
+		//}
 	}
 	
 	public void init (WallE bot)
