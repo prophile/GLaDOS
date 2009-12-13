@@ -248,9 +248,6 @@ public class WallE extends AdvancedRobot
 		}
 		// reset trackingCount to zero, since we know exactly where our target is
 		trackingCount = 0;
-		// if we have less than 50 energy, and it's more than 500 pixels away, abort now
-		if (getEnergy() < 50.0 && e.getDistance() > 500.0)
-			return; // this prevents us wasting energy on shots when we're far away
 		
 		// circular tracking: an algorithm from The Wiki™
 		// calculate the bullet power as min(rBP, our energy)
