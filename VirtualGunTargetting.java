@@ -12,6 +12,7 @@ public class VirtualGunTargetting extends Targetting
 	static int[] successes;
 	static boolean initted = false;
 	static int virtualBulletTick = 0;
+	static private final int numVirtualGuns = 5;
 	
 	double enemyX, enemyY;
 	private ArrayList<VirtualBullet> virtualBullets;
@@ -19,22 +20,27 @@ public class VirtualGunTargetting extends Targetting
 	
 	public void onPaint(Graphics2D graphics)
 	{
-		//for (VirtualBullet bullet : virtualBullets)
-		//{
-		//	switch (bullet.targetter)
-		//	{
-		//	case 0:
-		//		graphics.setColor(Color.blue);
-		//		break;
-		//	case 1:
-		//		graphics.setColor(Color.red);
-		//		break;
-		//	case 2:
-		//		graphics.setColor(Color.green);
-		//		break;
-		//	}
-		//	graphics.fill(new Rectangle2D.Double(bullet.x, bullet.y, 4.0, 4.0));
-		//}
+		for (VirtualBullet bullet : virtualBullets)
+		{
+			switch (bullet.targetter)
+			{
+				case 0:
+					graphics.setColor(Color.blue);
+					break;
+				case 1:
+					graphics.setColor(Color.red);
+					break;
+				case 2:
+					graphics.setColor(Color.green);
+					break;
+				case 3:
+					graphics.setColor(Color.yellow);
+					break;
+				case 4:
+					graphics.setColor(Color.magenta);
+			}
+			graphics.fill(new Rectangle2D.Double(bullet.x, bullet.y, 4.0, 4.0));
+		}
 	}
 	
 	public void init (WallE bot)
@@ -42,19 +48,25 @@ public class VirtualGunTargetting extends Targetting
 		owner = bot;
 		if (!initted)
 		{
-			targetters = new Targetting[3];
-			successes = new int[3];
+			targetters = new Targetting[numVirtualGuns];
+			successes = new int[numVirtualGuns];
 			successes[0] = 0;
 			successes[1] = 0;
 			successes[2] = 0;
+			successes[3] = 0;
+			successes[4] = 0;
 			initted = true;
 		}
 		targetters[0] = new CircularTargetting();
 		targetters[1] = new NaiveTargetting();
 		targetters[2] = new LinearTargetting();
+		targetters[3] = new RandomTargetting();
+		targetters[4] = new ReverseCircularTargetting();
 		targetters[0].init(bot);
 		targetters[1].init(bot);
 		targetters[2].init(bot);
+		targetters[3].init(bot);
+		targetters[4].init(bot);
 		virtualBullets = new ArrayList<VirtualBullet>();
 	}
 	
@@ -89,9 +101,9 @@ public class VirtualGunTargetting extends Targetting
 				i--;
 			}
 		}
-		owner.setDebugProperty("VGWeightings", "circ=" + successes[0] + " naive=" + successes[1] + " linear=" + successes[2]);
+		owner.setDebugProperty("VGWeightings", "circ=" + successes[0] + " naive=" + successes[1] + " linear=" + successes[2] + " random=" + successes[3] + " rcirc=" + successes[4]);
 		owner.setDebugProperty("VGVBCount", "" + virtualBullets.size());
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < numVirtualGuns; i++)
 		{
 			targetters[i].update();
 		}
@@ -102,7 +114,7 @@ public class VirtualGunTargetting extends Targetting
 		// select the targetter with the best record
 		int bestTargetter = 0; // default to the first
 		int mostSuccesses = 0;
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < numVirtualGuns; i++)
 		{
 			if (successes[i] > mostSuccesses)
 			{
@@ -121,7 +133,7 @@ public class VirtualGunTargetting extends Targetting
 		if (virtualBulletTick % 4 == 0)
 		{
 			double bulletPower = e.getDistance() > 500.0 ? 2.0 : 3.0;
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < numVirtualGuns; i++)
 			{
 				double angle = targetters[i].target(e, bulletPower);
 				VirtualBullet bullet = new VirtualBullet();
@@ -134,7 +146,7 @@ public class VirtualGunTargetting extends Targetting
 				virtualBullets.add(bullet);
 			}
 		}
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < numVirtualGuns; i++)
 		{
 			targetters[i].enemyPosition(e, x, y);
 		}
