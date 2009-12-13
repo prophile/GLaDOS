@@ -162,6 +162,8 @@ public class WallE extends AdvancedRobot
 		}
 		
 		setAdjustGunForRobotTurn(true);
+		setAdjustRadarForRobotTurn(true);
+		setAdjustRadarForGunTurn(true);
 		gunRotation = defaultGunRotationSpeed;
 		
 		setupStrategies();
@@ -184,8 +186,8 @@ public class WallE extends AdvancedRobot
 			}
 			else
 			{
-				gunRotation = Double.POSITIVE_INFINITY;
-				//setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+				setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+				gunRotation = 0;
 			}
 			// call execute
 			execute();
