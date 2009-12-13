@@ -31,9 +31,13 @@ public class WaveSurfMovement extends Movement
 	
 	public void onPaint(Graphics2D graphics)
 	{
+		Wave target = surfTarget();
 		for (Wave wave : waves)
 		{
-			graphics.setColor(Color.red);
+			if (target == wave)
+				graphics.setColor(Color.green);
+			else
+				graphics.setColor(Color.red);
 			double radius = wave.distanceTravelled;
 			graphics.draw(new Ellipse2D.Double(wave.fireX - radius, wave.fireY - radius, radius * 2.0, radius * 2.0));
 		}
