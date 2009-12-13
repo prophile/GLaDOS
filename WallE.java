@@ -247,7 +247,9 @@ public class WallE extends AdvancedRobot
 		// circular tracking: an algorithm from The Wiki™
 		// calculate the bullet power as min(rBP, our energy)
 		double requestedBulletPower;
-		if (e.getDistance() < 400.0)
+		if (getEnergy() < 30.0)
+			requestedBulletPower = 1.0;
+		else if (e.getDistance() < 400.0)
 			requestedBulletPower = 3.0;
 		else
 			requestedBulletPower = 2.0;
