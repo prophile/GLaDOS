@@ -88,12 +88,21 @@ public class WaveSurfMovement extends Movement
 				i--;
 			}
 		}
+		// move away from the wall if we're rammed
+		//double battleFieldWidth = owner.getBattleFieldWidth();
+		//double battleFieldHeight = owner.getBattleFieldHeight();
+		//double x = owner.getX();
+		//double y = owner.getY();
+		//if (x < 51.0 || y < 51.0 || x > (battleFieldWidth - 51) || y > (battleFieldHeight - 51))
+		//{
+		//   directMove(Math.atan2((battleFieldWidth/2.0) - x, (battleFieldHeight/2.0) - y));
+		//   return;
+		//}
 		// find nearest and surf it
 		Wave target = surfTarget();
 		if (target == null) // no waves yet, I guess?
 		{
-			// ONWARD
-			//owner.setAhead(Double.POSITIVE_INFINITY);
+			owner.setAhead(0);
 			return;
 		}
 		
