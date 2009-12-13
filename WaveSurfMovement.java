@@ -60,23 +60,6 @@ public class WaveSurfMovement extends Movement
 		return target;
 	}
 	
-	public static double wallSmooth ( WallE bot, double x, double y, double angle, int orientation )
-	{
-		// a very clever bit of code: if we're about to hit the wall, round off so we miss it
-		double projectedX, projectedY;
-		double width = bot.getBattleFieldWidth();
-		double height = bot.getBattleFieldHeight();
-		while (true)
-		{
-			projectedX = x + Math.sin(angle) * 160.0;
-			projectedY = y + Math.cos(angle) * 160.0;
-			angle += orientation*0.05;
-			if (!((projectedX < 18.0) || (projectedY < 18.0) || (projectedX > (width - 18.0)) || (projectedY > (height - 18.0))))
-				break;
-		}
-		return angle;
-	}
-	
 	public void onHitWall(HitWallEvent e)
 	{
 	}
@@ -118,25 +101,9 @@ public class WaveSurfMovement extends Movement
 			direction = 1;
 		
 		double angle = Math.atan2(owner.getX() - target.fireX, owner.getY() - target.fireY);
-		angle = wallSmooth(owner, owner.getX(), owner.getY(), angle + direction*(Math.PI*0.5), direction);
+		angle = Movement.wallSmooth(owner, owner.getX(), owner.getY(), angle + direction*(Math.PI*0.5), direction);
 
-		move(angle);
-	}
-	
-	public void move(double angle)
-	{
-		// head to the angle, using whichever is faster of forward or reverse
-		angle = Utils.normalRelativeAngle(angle - owner.getHeadingRadians());
-		if (Math.abs(angle) > Math.PI*0.5)
-		{
-			owner.setTurnLeftRadians(angle);
-			owner.setBack(Double.POSITIVE_INFINITY);
-		}
-		else
-		{
-			owner.setTurnRightRadians(angle);
-			owner.setAhead(Double.POSITIVE_INFINITY);
-		}
+		directMove(angle);
 	}
 	
 	public void onHitByBullet(HitByBulletEvent e)
@@ -232,7 +199,7 @@ public class WaveSurfMovement extends Movement
 			double dt;
 			for (dt = 0.0; dt < 500.0; dt += 1.0)
 			{
-				double moveAngle = WaveSurfMovement.wallSmooth(bot, predictedX, predictedY, Math.atan2(predictedX - fireX, predictedY - fireY) + (orientation * Math.PI*0.5), orientation) - predictedHeading;
+				double moveAngle = Movement.wallSmooth(bot, predictedX, predictedY, Math.atan2(predictedX - fireX, predictedY - fireY) + (orientation * Math.PI*0.5), orientation) - predictedHeading;
 				double moveDirection = 1;
 				
 				// catch the case where we have to back out
