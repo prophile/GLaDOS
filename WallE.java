@@ -84,18 +84,19 @@ public class WallE extends AdvancedRobot
 		int movementStrategyNumber = strategyNumber / 3;
 		int targettingStrategyNumber = strategyNumber % 3;
 		
-		switch (movementStrategyNumber)
-		{
-		case 0:
-			movementStrategy = new WaveSurfMovement();
-			break;
-		case 1:
-			movementStrategy = new AntiGravityMovement();
-			break;
-		case 2:
-			movementStrategy = new WallMovement();
-			break;
-		}
+		//switch (movementStrategyNumber)
+		//{
+		//case 0:
+		//	movementStrategy = new WaveSurfMovement();
+		//	break;
+		//case 1:
+		//	movementStrategy = new AntiGravityMovement();
+		//	break;
+		//case 2:
+		//	movementStrategy = new WallMovement();
+		//	break;
+		//}
+		movementStrategy = new AntiGravityMovement();
 		movementStrategy.init(this);
 		
 		//switch (targettingStrategyNumber)
