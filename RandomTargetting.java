@@ -14,8 +14,8 @@ public class RandomTargetting extends Targetting
 	{
 		double actualAngle = Utils.normalAbsoluteAngle(e.getBearingRadians() + owner.getHeadingRadians());
 		double randomFactor = owner.randomNumberGenerator().nextDouble();
-		randomFactor *= Math.PI * 0.36;
-		randomFactor -= Math.PI * 0.18;
+		randomFactor *= Math.PI * 0.26;
+		randomFactor -= Math.PI * 0.13;
 		return actualAngle + randomFactor;
 	}
 }
