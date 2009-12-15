@@ -275,7 +275,7 @@ public class WallE extends AdvancedRobot
 		}
 		// rotate the radar SEPARATELY so that we keep it pointing at our opponent and not their predicted position
 		double radarSwivel = Utils.normalRelativeAngle(enemyAngle - getRadarHeadingRadians());
-		setTurnRadarRightRadians(2.0*radarSwivel);
+		setTurnRadarRightRadians(1.9*radarSwivel);
 		// OPEN FIRE
 		if (getGunHeat() < 0.1 && !(getEnergy() < 50.0 && e.getDistance() > 500.0))
 			setFire(bulletPower);
