@@ -7,3 +7,6 @@ all: $(SOURCES)
 
 clean:
 	rm -f *.class
+
+stordify:
+	cd ../.. ; java -Xmx512M -Dsun.io.useCanonCaches=false -cp libs/robocode.jar robocode.Robocode -battle robots/cda/nemesis.battle -nodisplay -results robots/cda/nemesis.results
