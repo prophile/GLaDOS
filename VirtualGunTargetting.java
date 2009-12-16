@@ -97,7 +97,7 @@ public class VirtualGunTargetting extends Targetting
 		owner.setDebugProperty("VGVBCount", "" + virtualBullets.size());
 		owner.setDebugProperty("VGHits", "circ=" + successes[0] +
 		                                 " naive=" + successes[1] +
-		                                 " linear" + successes[2] +
+		                                 " linear=" + successes[2] +
 		                                 " rc=" + successes[3]);
 		for (int i = 0; i < numVirtualGuns; i++)
 		{
@@ -115,6 +115,7 @@ public class VirtualGunTargetting extends Targetting
 			if (successes[i] > mostHits)
 			{
 				bestTargetter = i;
+				mostHits = successes[i];
 			}
 		}
 		return targetters[bestTargetter].target(e, bulletPower);
