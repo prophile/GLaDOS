@@ -208,7 +208,7 @@ public class WallE extends AdvancedRobot
 	{
 		movementStrategy.onHitRobot(e);
 		// also, OPEN FIRE
-		fire(3);
+		setFire(3);
 	}
 	
 	public void onPaint(Graphics2D graphics)
