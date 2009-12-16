@@ -295,6 +295,7 @@ public class WallE extends AdvancedRobot
 		{
 			setTurnRightRadians(Double.POSITIVE_INFINITY);
 			setTurnGunLeftRadians(Double.POSITIVE_INFINITY);
+			setTurnRadarRightRadians(2.0);
 			execute();
 		}
 	}
