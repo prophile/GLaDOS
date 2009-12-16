@@ -96,7 +96,7 @@ public class WallE extends AdvancedRobot
 		//	movementStrategy = new WallMovement();
 		//	break;
 		//}
-		movementStrategy = new WaveSurfMovement();
+		movementStrategy = new MasterMovement();
 		movementStrategy.init(this);
 		
 		//switch (targettingStrategyNumber)
