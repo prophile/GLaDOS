@@ -12,6 +12,7 @@ public class MasterMovement extends Movement
 	private ArrayList<Force> forces;
 	private static final double WALL_FORCE = 150.0;
 	private static final double FORCE_EXPONENT = 1.5;
+	private static boolean isReversing = false;
 	Force enemyForce;
 	
 	public void init (WallE bot)
@@ -86,8 +87,17 @@ public class MasterMovement extends Movement
 		Vec2 totalForce = totalForceAtPosition(position);
 		double angle = totalForce.angle();
 		owner.setDebugProperty("MMForce", "" + totalForce.magnitude());
-		//if (totalForce.magnitudeSquared() > 0.005 || Math.abs(owner.getVelocity()) < 1.0)
-			directMove(angle);
+		double angleDiff = Utils.normalRelativeAngle(angle - owner.getHeadingRadians());
+		if (isReversing)
+		{
+			owner.setTurnLeftRadians(angleDiff);
+			owner.setBack(Double.POSITIVE_INFINITY);
+		}
+		else
+		{
+			owner.setTurnRightRadians(angleDiff);
+			owner.setAhead(Double.POSITIVE_INFINITY);
+		}
 		double width = owner.getBattleFieldWidth(), height = owner.getBattleFieldHeight();
 		for (Force force : forces)
 		{
@@ -104,6 +114,7 @@ public class MasterMovement extends Movement
 	
 	public void onHitWall (HitWallEvent e)
 	{
+		isReversing = !isReversing;
 	}
 	
 	public void onHitRobot (HitRobotEvent e)
@@ -125,6 +136,7 @@ public class MasterMovement extends Movement
 	
 	public void detectedShot (ScannedRobotEvent e, double shotPower)
 	{
+		isReversing = !isReversing;
 	}
 	
 	private class Vec2
