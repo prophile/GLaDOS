@@ -6,6 +6,13 @@ import java.awt.geom.*;
 
 public class RandomTargetting extends Targetting
 {
+	private double angle;
+	
+	RandomTargetting(double targettingAngle)
+	{
+		angle = targettingAngle;
+	}
+	
 	public void update ()
 	{
 	}
@@ -14,8 +21,8 @@ public class RandomTargetting extends Targetting
 	{
 		double actualAngle = Utils.normalAbsoluteAngle(e.getBearingRadians() + owner.getHeadingRadians());
 		double randomFactor = owner.randomNumberGenerator().nextDouble();
-		randomFactor *= Math.PI * 0.26;
-		randomFactor -= Math.PI * 0.13;
+		randomFactor *= angle * 2.0;
+		randomFactor -= angle;
 		return actualAngle + randomFactor;
 	}
 }

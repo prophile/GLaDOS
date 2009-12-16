@@ -12,7 +12,7 @@ public class VirtualGunTargetting extends Targetting
 	static Targetting[] targetters;
 	static boolean initted = false;
 	static int virtualBulletTick = 0;
-	static private final int numVirtualGuns = 4;
+	static private final int numVirtualGuns = 6;
 	static private int[] successes;
 	
 	double enemyX, enemyY;
@@ -37,6 +37,12 @@ public class VirtualGunTargetting extends Targetting
 				case 3:
 					graphics.setColor(Color.yellow);
 					break;
+				case 4:
+					graphics.setColor(Color.magenta);
+					break;
+				case 5:
+					graphics.setColor(Color.cyan);
+					break;
 			}
 			graphics.fill(new Rectangle2D.Double(bullet.x, bullet.y, 4.0, 4.0));
 		}
@@ -49,16 +55,20 @@ public class VirtualGunTargetting extends Targetting
 		{
 			targetters = new Targetting[numVirtualGuns];
 			initted = true;
-			successes = new int[4];
+			successes = new int[numVirtualGuns];
 		}
 		targetters[0] = new CircularTargetting();
 		targetters[1] = new NaiveTargetting();
 		targetters[2] = new LinearTargetting();
 		targetters[3] = new ReverseCircularTargetting();
+		targetters[4] = new RandomTargetting(Math.PI * 0.12);
+		targetters[5] = new RandomTargetting(Math.PI * 0.2);
 		targetters[0].init(bot);
 		targetters[1].init(bot);
 		targetters[2].init(bot);
 		targetters[3].init(bot);
+		targetters[4].init(bot);
+		targetters[5].init(bot);
 		virtualBullets = new ArrayList<VirtualBullet>();
 	}
 	
@@ -98,7 +108,9 @@ public class VirtualGunTargetting extends Targetting
 		owner.setDebugProperty("VGHits", "circ=" + successes[0] +
 		                                 " naive=" + successes[1] +
 		                                 " linear=" + successes[2] +
-		                                 " rc=" + successes[3]);
+		                                 " rc=" + successes[3] +
+		                                 " rN=" + successes[4] +
+		                                 " rW=" + successes[5]);
 		for (int i = 0; i < numVirtualGuns; i++)
 		{
 			targetters[i].update();
