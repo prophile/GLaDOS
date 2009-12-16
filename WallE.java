@@ -277,8 +277,13 @@ public class WallE extends AdvancedRobot
 		double radarSwivel = Utils.normalRelativeAngle(enemyAngle - getRadarHeadingRadians());
 		setTurnRadarRightRadians(1.9*radarSwivel);
 		// OPEN FIRE
-		if (getGunHeat() < 0.1 && !(getEnergy() < 50.0 && e.getDistance() > 500.0))
+		if (shouldFireShot(e))
 			setFire(bulletPower);
+	}
+	
+	public boolean shouldFireShot(ScannedRobotEvent e)
+	{
+		return getGunHeat() <= 0.0 && !(getEnergy() < 50.0 && e.getDistance() > 500.0);
 	}
 	
 	public void onWin(WinEvent e)

@@ -126,7 +126,7 @@ public class VirtualGunTargetting extends Targetting
 		virtualBulletTick++;
 		lastEnemyScanTime = owner.getTime();
 		// only log it when we actually fire: the enemy may respond to that
-		if (owner.getGunHeat() <= 0.0)
+		if (owner.shouldFireShot(e))
 		{
 			double bulletPower = e.getDistance() > 500.0 ? 2.0 : 3.0;
 			for (int i = 0; i < numVirtualGuns; i++)
