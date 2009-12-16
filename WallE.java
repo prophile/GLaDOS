@@ -283,7 +283,7 @@ public class WallE extends AdvancedRobot
 	
 	public boolean shouldFireShot(ScannedRobotEvent e)
 	{
-		return getGunHeat() <= 0.0 && !(getEnergy() < 50.0 && e.getDistance() > 500.0);
+		return getGunHeat() <= 0.0 && !(getEnergy() < 50.0 && e.getDistance() > 500.0) && getEnergy() > 0.0;
 	}
 	
 	public void onWin(WinEvent e)
