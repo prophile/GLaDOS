@@ -117,7 +117,10 @@ public class MasterMovement extends Movement
 	public void enemyPosition (ScannedRobotEvent e, double x, double y)
 	{
 		enemyForce.origin = new Vec2(x, y);
-		enemyForce.attractiveForce = Math.pow((owner.getEnergy() - e.getEnergy()) * 0.5, 2.0);
+		double forceStrength = owner.getEnergy() - e.getEnergy() - 20.0;
+		if (forceStrength > 0.0)
+			forceStrength = Math.pow(forceStrength, 1.6); // agressive ramming
+		enemyForce.attractiveForce = forceStrength;
 	}
 	
 	public void detectedShot (ScannedRobotEvent e, double shotPower)
